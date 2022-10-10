@@ -1,0 +1,63 @@
+﻿@model TBENesys_Orderflow_Core.ViewModels.AccountRoleHandlerViewModel
+
+@{
+    string ActionText = "";
+    if (Model.ID.HasValue)
+    {
+        ViewBag.Title = "Update Role - " + Model.Title;
+        ActionText = "Update";
+    }
+    else
+    {
+        ViewBag.Title = "New Account Role";
+        ActionText = "Save";
+    }
+}
+
+
+
+@using (Html.BeginForm("AccountRoleHandler", "Admin", FormMethod.Post, new { @class = "col-lg-12" }))
+{
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">@ViewBag.Title</h4>
+                <p class="card-description">
+                </p>
+                <form class="forms-sample">
+                    <div class="form-group">
+                        @if (@ViewBag.ResultMessage != null && @ViewBag.ResultMessage.ToString().Contains("Error"))
+                        {
+                            <div class="alert alert-danger">@ViewBag.ResultMessage</div>
+                        }
+                        else if (@ViewBag.ResultMessage != null)
+                        {
+                            <div class="alert alert-success">@ViewBag.ResultMessage</div>
+                        }
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger">
+                                <button class="close" data-dismiss="alert"></button>
+                                @Html.ValidationSummary()
+                            </div>
+                        }
+                        <div class="clear"></div>
+                    </div>
+                    @Html.HiddenFor(m => m.ID)
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Title)
+                        @Html.TextBoxFor(m => m.Title, new { @placeholder = "Account Role Title", @class = "form-control" })
+                    </div>
+                    <button type="submit" class="btn btn-primary mr-2"> @ActionText </button>
+                    <a href="@Url.Action("AccountRolesListing")" class="btn btn-light">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+
+@section Scripts {
+    <script type="text/javascript">
+    </script>
+}

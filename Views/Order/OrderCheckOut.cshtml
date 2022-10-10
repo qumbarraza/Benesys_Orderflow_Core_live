@@ -1,0 +1,124 @@
+﻿@model TBENesys_Orderflow_Core.ViewModels.OrderCheckOutViewModel
+
+@{
+    ViewData["Title"] = @Model.PageTitle;
+}
+
+@section styles{
+    <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+    <style>
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-control {
+            height: 40px;
+        }
+
+        .col-sm-2 {
+            padding-top: 12px;
+        }
+        .card-body {
+            font-size: 15px;
+        }
+
+        .card-body a {
+            font-size: 15px;
+        }
+
+        .card-body p {
+            font-size: 15px;
+        }
+
+        .form-group label {
+            font-size: 15px !important;
+        }
+    </style>
+}
+@section Breadcrumbs{
+    <h3 class="page-title">Order Check Out</h3>
+}
+<div class="col-lg-12">
+    <div class="card">
+        <div class="card-title" style="font-size:15px;">
+            @if (@ViewBag.ResultMessage != null && @ViewBag.ResultMessage.ToString().Contains("Error"))
+            {
+                <div class="alert alert-danger">@ViewBag.ResultMessage</div>
+            }
+            else if (@ViewBag.ResultMessage != null)
+            {
+                <div class="alert alert-success">@ViewBag.ResultMessage</div>
+            }
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    <button class="close" data-dismiss="alert"></button>
+                    @Html.ValidationSummary()
+                </div>
+            }
+            @if (Model.Response != null)
+            {
+                @Html.Partial("_MessagePartial", Model.Response)
+            }
+            <div class="clear"></div>
+        </div>
+        <div class="card-body">
+            @using (Html.BeginForm("OrderCheckOut", "Order", FormMethod.Post, new { enctype = "multipart/form-data", @class = "col-lg-12" }))
+            {
+
+                <form class="forms-sample" style="font-size:15px;">
+                    <fieldset>
+                        <legend>Contact</legend>
+                        <div class="form-group row">
+                            <div class="col-sm-2">@Html.LabelFor(m => m.RequestorName)</div>
+                            <div class="col-sm-6">@Html.TextBoxFor(m => m.RequestorName, new { @placeholder = "Requestor Name", @class = "form-control" })</div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-2">@Html.LabelFor(m => m.RequestorEmail)</div>
+                            <div class="col-sm-6">@Html.TextBoxFor(m => m.RequestorEmail, new { @placeholder = "Requestor Email", @class = "form-control" })</div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-2">@Html.LabelFor(m => m.RequestorPhone)</div>
+                            <div class="col-sm-6">@Html.TextBoxFor(m => m.RequestorPhone, new { @placeholder = "Requestor Phone", @class = "form-control" })</div><br />
+                            <span style="color:red;">Format: 123-123-1234</span>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-2">@Html.LabelFor(m => m.Fringe)</div>
+                            <div class="col-sm-6">@Html.TextBoxFor(m => m.Fringe, new { @placeholder = "Fringe", @class = "form-control" })</div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-2"> @Html.LabelFor(m => m.ChargeOrderTo)</div>
+                            <div class="col-sm-6"> @Html.DropDownListFor(x => x.ChargeOrderTo, new SelectList(Model.AllChargeOrderTos, "Value", "Text"), new { Class = "form-control" })</div>
+
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-2">@Html.LabelFor(m => m.ApprovalManager)</div>
+                            <div class="col-sm-6">@Html.DropDownListFor(x => x.ApprovalManager, new SelectList(Model.AllApprovalManagers, "Value", "Text"), new { Class = "form-control" })</div>
+                            <span style="color:red;">Invoice will be emailed to this address.</span>
+                        </div>
+                    </fieldset>
+                    <button type="submit" class="btn btn-primary mr-2"> Proceed </button>
+                </form>
+            }
+            <br />
+        </div>
+    </div>
+</div>
+<div class="clear"></div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+
+    <script src="~/js/jquery.maskedinput.min.js"></script>
+
+
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            $("#RequestorPhone").mask("999-999-9999");
+            
+            
+        });
+
+    </script>
+}
+

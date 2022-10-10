@@ -1,0 +1,180 @@
+﻿@model TBENesys_Orderflow_Core.ViewModels.OrderListingViewModel
+
+@{
+    ViewData["Title"] = @Model.PageTitle;
+}
+
+@section styles{
+    <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/dataTables.jqueryui.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.0.1/css/buttons.dataTables.min.css" />
+
+    <style>
+
+        .modal-content {
+            background-color: #ffffff;
+        }
+
+        .modal-dialog {
+            max-width: 700px;
+        }
+    </style>
+
+}
+@section Breadcrumbs{
+    <h3 class="page-title">@Model.PageTitle</h3>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href=@Url.Action("Index", "Order" )>Dashboard</a></li>
+        </ol>
+    </nav>
+}
+<div class="col-lg-12">
+    <div class="card">
+        <div class="card-title">
+            @if (@ViewBag.ResultMessage != null && @ViewBag.ResultMessage.ToString().Contains("Error"))
+            {
+                <div class="alert alert-danger">@ViewBag.ResultMessage</div>
+            }
+            else if (@ViewBag.ResultMessage != null)
+            {
+                <div class="alert alert-success">@ViewBag.ResultMessage</div>
+            }
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    <button class="close" data-dismiss="alert"></button>
+                    @Html.ValidationSummary()
+                </div>
+            }
+            @if (Model.Response != null)
+            {
+                @Html.Partial("_MessagePartial", Model.Response)
+            }
+            <div class="clear"></div>
+        </div>
+        <div class="card-body">
+            <table id="dtTable" class="display table table-bordered table-hover" style="max-width:100%;">
+                <thead>
+                    <tr>
+                        <th><b>Order #</b></th>
+                        <th><b>Status</b></th>
+                        <th><b>Job Name</b></th>
+                        <th><b>Charge To</b></th>
+                        @*<th><b>Ordered By</b></th>*@
+                        <th><b>Date Submitted</b></th>
+                        <th style="text-align:center;"><b>Actions</b></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Records.Count > 0)
+                    {
+                        foreach (var item in Model.Records)
+                        {
+                    <tr>
+                        <td>TBEN-@item.lngID</td>
+                        <td>@item.status</td>
+                        <td>@{string FinalJobName = String.IsNullOrEmpty(item.job_details_jobName) ? "" : (item.job_details_jobName.Length <= 35 ? item.job_details_jobName : item.job_details_jobName.Substring(0, 35) + "...");} @FinalJobName</td>
+                        <td>@{string ChargeTo = String.IsNullOrEmpty(item.envelope_product_Cost_Center) ? "" : item.envelope_product_Cost_Center.Substring(0, 4); } @ChargeTo</td>
+                        @*<td>@{string OrderedBy = Model.OCFRecords.FirstOrDefault(d => d.lngOrder == item.lngID && d.name == "Contact_Requestor Name") != null ? Model.OCFRecords.FirstOrDefault(d => d.lngOrder == item.lngID && d.name == "Contact_Requestor Name").value : "";} @OrderedBy</td>*@
+                        <td>@item.datSubmitted.Value.ToString("MM/dd/yyyy h:mm tt")</td>
+                        <td style=" text-align:center;">
+                            <a style="color: blue; font-size: 20px;" title="View" href="#" onclick="openModal(@item.lngID)"><i class="mdi mdi-search-web"></i></a> @*|*@
+                            @*<a style="color: red; font-size: 20px;" title="Delete" href="@Url.Action("DeleteOrder" , new { id = item.lngID })" onclick="return confirm('Are you sure you want to delete record ?');"><i class="mdi mdi-delete-forever"></i></a>*@
+
+
+                        </td>
+                    </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7">No orders found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <!-- Modal -->
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Order Receipt</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group" id="ModelBody">
+                                @*@Html.Raw(@Model.OrderReceiptDetails)*@
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="clear"></div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/dataTables.jqueryui.min.js"></script>
+
+    <script src="https://cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.html5.min.js"></script>
+
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+
+            $('#dtTable').DataTable({
+                "bSortClasses": false,
+                'paging': true,
+                'lengthChange': true,
+                "lengthMenu": [[50, 75, 100, -1], [50, 75, 100, "Show All"]],
+                'searching': true,
+                'ordering': true,
+                'info': true,
+                'autoWidth': true,
+                columnDefs: [
+                    { orderable: false, targets: -1 }
+                ],
+                "order": [[0, "desc"]],
+                dom: 'Blfrtip',
+                buttons: [
+                    'excel', 'csv'
+                ]
+            })
+
+        });
+
+        function openModal(lngID) {
+            jQuery.noConflict();
+            $('#myModal').modal('show');
+
+            $.ajax({
+                    type: "Get",
+                    url: '@Url.Action("GetOrderReceiptDetails", "Admin")',
+                    data: { maincontent: lngID },
+                    dataType: "json",
+                    success: function (data) {
+                        $("#myModal .modal-body").html(data);
+                    },
+                    error: function (e) {
+
+                        console.log(e);
+
+                    }
+                });
+        }
+    </script>
+}
+

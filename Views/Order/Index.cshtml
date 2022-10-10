@@ -1,0 +1,564 @@
+﻿@model TBENesys_Orderflow_Core.ViewModels.OrderViewModel
+
+@{
+    ViewData["Title"] = @Model.PageTitle;
+}
+
+@section styles{
+    <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+    <link href="~/bootstrap-datetimepicker-master/css/bootstrap-datetimepicker.css" rel="stylesheet" media="screen">
+    <link href="~/bootstrap-datetimepicker-master/sample in bootstrap v3/bootstrap/css/bootstrap.css" rel="stylesheet" media="screen">
+
+    <style>
+        .modal-content {
+            background-color: #ffffff;
+        }
+        
+
+        .modal-dialog {
+            max-width: 700px;
+        }
+
+        .card {
+            border: 1px solid #0033C4;
+        }
+
+        .card-filled {
+            border: 1px solid #00CC00;
+            background-color: #00CC00;
+        }
+
+        .card-title-filled {
+            font-size: 16px;
+            margin: 10px;
+            background-color: #00CC00;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .card-filled-red {
+            border: 1px solid #F2DEDE;
+            background-color: #F2DEDE;
+        }
+
+        .card-title-filled-red {
+            font-size: 16px;
+            margin: 10px;
+            background-color: #F2DEDE;
+            color: #A94442;
+            font-weight: bold;
+        }
+
+        .card-filled-normal {
+            border: 1px solid #428BCA;
+            background-color: #428BCA;
+        }
+
+        .card-title-filled-normal {
+            font-size: 16px;
+            margin: 10px;
+            background-color: #428BCA;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .card .card-title {
+            font-size: 16px;
+            margin: 10px;
+        }
+
+        .card-body {
+            font-size: 15px;
+            padding-top: 0px;
+            background-color: #fff;
+        }
+
+            .card-body a {
+                font-size: 15px;
+            }
+
+            .card-body p {
+                font-size: 15px;
+            }
+
+        .col-lg-3 {
+            padding: 5px;
+        }
+
+        .col-lg-9 {
+            padding: 5px;
+        }
+
+        .form-control {
+            height: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+            .form-group label {
+                font-size: 15px !important;
+            }
+
+        .menu-title {
+            font-size: 15px !important;
+        }
+
+        .nav-link {
+            font-size: 15px !important;
+        }
+
+        .page-header {
+            padding-bottom: 0px;
+            margin: 0px;
+            border-bottom: 0px;
+        }
+    </style>
+}
+@section Breadcrumbs{
+
+}
+<div class="col-lg-12" style="font-size:13px;">
+    @if (@ViewBag.ResultMessage != null && @ViewBag.ResultMessage.ToString().Contains("Error"))
+    {
+        <div class="alert alert-danger">@ViewBag.ResultMessage</div>
+    }
+    else if (@ViewBag.ResultMessage != null)
+    {
+        <div class="alert alert-success">@ViewBag.ResultMessage</div>
+    }
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <button class="close" data-dismiss="alert"></button>
+            @Html.ValidationSummary()
+        </div>
+    }
+    @if (Model.Response != null)
+    {
+        @Html.Partial("_MessagePartial", Model.Response)
+    }
+</div>
+<div class="clear"></div>
+@using (Html.BeginForm("Index", "Order", FormMethod.Post))
+{
+    <div class="col-lg-12" style="display:-webkit-inline-box;">
+        <div class="col-lg-9">
+            <div class="card card-filled-red">
+
+                <div class="card-title-filled-red">
+                    Important <i class="mdi mdi-message-alert"></i>
+                </div>
+                <div class="card-body">
+                    <p>Please carefully review <b>Turnaround</b> information located in the Job Details panel. You must select '24 Hour Rush', when an order meets the specifications of a rushed order.The rush fee is $100.</p>
+                    <p>Be sure to include your <b>Non-Discrimination</b> & <b>Tag line Notices</b> when applicable.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <button id="ProceedToCheckout" type="submit" class="btn btn-primary mr-2" style="width:100%;"> Proceed to checkout </button>
+            <br />
+            <a href="@Url.Action("OrderClearAll")" class="btn btn-danger" style="width:100%;margin-top:5px;" onclick="return confirm('Are you sure you want to clear all details and start over?');">Clear All</a>
+        </div>
+    </div>
+    <div class="clear"></div>
+    <div class="col-lg-12" style="display: -webkit-inline-box;">
+        <div class="col-lg-3">
+            @if (Model.DLs != null && Model.DLs.Count > 0)
+            {
+                <div class="card card-filled">
+                    <div class="card-title-filled">
+                        1. Documents <i class="mdi mdi-file-document-box-check"></i>
+                    </div>
+                    <div class="card-body" style="padding-top:10px;height:500px;">
+                        @if (Model.DLs.Count > 0)
+                        {
+                            <span><b>You have selected</b></span>
+                            <ol style="margin-bottom:0px;">
+                                @if (Model.DLs != null && Model.DLs.Count > 0)
+                                {
+                                    foreach (var item in Model.DLs)
+                                    {
+                                        <li style="font-weight:bold;">
+                                            @item.FileName
+                                        </li>
+                                    }
+                                }
+                            </ol>
+                            <span><b>as your upload file(s)</b></span><br />
+                            <a href="@Url.Action("OrderUploadDocuments")" class="">Sort, remove or upload a file for your order</a> <br />
+                            <a href="@Url.Action("OrderClearDocuments")" class="">There is no document in this order<br /></a> <br />
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("OrderUploadDocuments")" class="">Upload a document for this order <br /> <span style="font-size:small;">(Upload #9 envelope if required)</span></a> <br />
+                            <a href="@Url.Action("OrderClearDocuments")" class="">There is no document in this order</a> <br />
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                @if (!Model.ClearedActionAppliedDLs)
+                {
+                    <div class="card card-filled-normal">
+                        <div class="card-title-filled-normal">
+                            1. Documents
+                        </div>
+                        <div class="card-body" style="padding-top: 10px; height: 500px;">
+                            <a href="@Url.Action("OrderUploadDocuments")" class="">Upload a document for this order<br /> <span style="font-size:small;">(Upload #9 envelope if required)</span></a> <br />
+                            <a href="@Url.Action("OrderClearDocuments")" class="">There is no document in this order</a> <br />
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card card-filled-red">
+                        <div class="card-title-filled-red">
+                            1. Documents <i class="mdi mdi-file-document-box-remove"></i>
+                        </div>
+                        <div class="card-body" style="padding-top: 10px; height: 500px;">
+                            <b>There is no document in this order</b><br />
+                            <a href="@Url.Action("OrderUploadDocuments")" class="">Upload a document for this order<br /> <span style="font-size:small;">(Upload #9 envelope if required)</span></a> <br />
+                        </div>
+                    </div>
+                }
+
+            }
+        </div>
+        <div class="col-lg-3">
+            @if (Model.SelectedEnvelope != null)
+            {
+                <div class="card card-filled">
+                    <div class="card-title-filled">
+                        2. Client Return Address <i class="mdi mdi-file-document-box-check"></i>
+                    </div>
+                    <div class="card-body" style="padding-top: 10px; height: 500px; ">
+                        <span><b>You have selected</b></span>
+                        <ol style="margin-bottom:0px;">
+                            <li style="font-weight:bold;">
+                                @Model.SelectedEnvelope.MainContent
+                            </li>
+                        </ol>
+                        <span><b>as your envelope address</b></span><br />
+                        <a href="@Url.Action("OrderSelectEnvelope")" class="">Select a different address for your order</a> <br />
+                        <a href="@Url.Action("OrderClearEnvelope")" class="">There is no envelope in this order</a> <br />
+                    </div>
+                </div>
+            }
+            else
+            {
+                
+                @if (!Model.ClearedActionAppliedEnvelope)
+                {
+                    <div class="card card-filled-normal">
+                        <div class="card-title-filled-normal">
+                            2. Client Return Address
+                        </div>
+                        <div class="card-body" style="padding-top: 10px; height: 500px;">
+                            <a href="@Url.Action("OrderSelectEnvelope")" class="">Select an address for this order</a> <br />
+                            <a href="@Url.Action("OrderClearEnvelope")" class="">There is no envelope in this order</a> <br />
+                        </div>
+                    </div>
+                }
+                
+                else
+                {
+                    <div class="card card-filled-red">
+                        <div class="card-title-filled-red">
+                            2. Client Return Address <i class="mdi mdi-file-document-box-remove"></i>
+                        </div>
+                        <div class="card-body" style="padding-top: 10px; height: 500px;">
+                            <b>There is no envelope in this order</b><br />
+                            <a href="@Url.Action("OrderSelectEnvelope")" class="">Select an address for this order</a> <br />
+                        </div>
+                    </div>
+                }
+
+            }
+                
+        </div>
+                
+        <div class="col-lg-3">
+            @if (Model.MLs != null && Model.MLs.Count > 0)
+            {
+                <div class="card card-filled">
+                    <div class="card-title-filled">
+                        3. Mailing List <i class="mdi mdi-file-document-box-check"></i>
+                    </div>
+                    <div class="card-body" style="padding-top: 10px; height: 500px;">
+                        <span><b>You have selected</b></span>
+                        <ol style="margin-bottom:0px;">
+                            @foreach (var item in Model.MLs)
+                            {
+                                <li style="font-weight:bold;">
+                                    @item.FileName
+                                </li>
+                            }
+                        </ol>
+                        <span><b>as your upload file(s)</b></span><br />
+                        <a href="@Url.Action("OrderUploadMailing")" class="">Select a different mailing list for your order</a> <br />
+                        <a href="@Url.Action("OrderClearMailing")" class="">There is no mailing list in this order</a> <br />
+                    </div>
+                </div>
+            }
+            else
+            {
+                @if (!Model.ClearedActionAppliedMLs)
+                {
+                    <div class="card card-filled-normal">
+                        <div class="card-title-filled-normal">
+                            3. Mailing List
+                        </div>
+                        <div class="card-body" style="padding-top: 10px; height: 500px;">
+                            <a href="@Url.Action("OrderUploadMailing")" class="">Upload a mailing list for this order</a> <br />
+                            <a href="@Url.Action("OrderClearMailing")" class="">There is no mailing list in this order</a> <br />
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card card-filled-red">
+                        <div class="card-title-filled-red">
+                            3. Mailing List <i class="mdi mdi-file-document-box-remove"></i>
+                        </div>
+                        <div class="card-body" style="padding-top: 10px; height: 500px;">
+                            <b>There is no mailing list in this order</b><br />
+                            <a href="@Url.Action("OrderUploadMailing")" class="">Upload a mailing list for this order</a> <br />
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+        <div class="col-lg-3">
+            <div class="card card-filled-normal">
+                <div class="card-title-filled-normal">
+                    4. Job Details
+                </div>
+                <div class="card-body" style="padding-top: 10px; height: 500px;">
+                    <form class="forms-sample">
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.JobName)
+                            @Html.TextBoxFor(m => m.JobName, new { @placeholder = "Job Name", @class = "form-control" })
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.JobPrints)<br />
+                            @Html.RadioButtonFor(m => m.JobPrints, "COLOR", new { @checked = "checked" }) COLOR
+                            @Html.RadioButtonFor(m => m.JobPrints, "B/W") B/W
+                        </div>
+                        @if (Model.SelectedEnvelope != null)
+                        {
+                            <div class="form-group">
+                                @Html.LabelFor(m => m.EnvelopeSize)<br />
+                                @Html.RadioButtonFor(m => m.EnvelopeSize, "#10 Regular", new { @checked = "checked" }) #10 Envelope
+                                @Html.RadioButtonFor(m => m.EnvelopeSize, "9x12") 9x12
+                                <br />
+                                <span style="font-size:10px;">2-sided printing is standard, please email at support.TBENesys@smartsourcellc.com for mailings containing 7+ inserts</span>
+                            </div>
+                        }
+                        <div class="form-group">
+                            @Html.Label("Print quantity")
+                            @if (Model.MLs != null && Model.MLs.Count > 0)
+                            {
+                                <br />
+                                <span style="font-size:10px;">Print quantity is based on mail list total</span>
+                            }
+
+                            else
+                            {
+                                @Html.TextBoxFor(m => m.Printquantity, new { @placeholder = "Printquantity", @class = "form-control" })
+                            }
+                        </div>
+                        @if (Model.MLs != null && Model.MLs.Count > 0)
+                        {
+                            <div class="form-group" style="font-size:12px;">
+                                @Html.LabelFor(m => m.MailDropDate)
+                                <div class="input-group date form_date" data-date="" data-date-format="mm/dd/yyyy" data-link-field="MailDropDate" data-link-format="mm/dd/yyyy">
+                                    @*<input class="form-control" size="16" type="text" value="" readonly>*@
+                                    @Html.TextBoxFor(m => m.MailDropDate, "{0:MM/dd/yyyy}", new { @class = "form-control" })
+                                    <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+                                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                                </div>
+
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group" style="font-size:12px;">
+                                @Html.LabelFor(m => m.OrderNeededBy)
+                                <div class="input-group date form_date" data-date="" data-date-format="mm/dd/yyyy" data-link-field="OrderNeededBy" data-link-format="mm/dd/yyyy">
+                                    @*<input class="form-control" size="16" type="text" value="" readonly>*@
+                                    @Html.TextBoxFor(m => m.OrderNeededBy, "{0:MM/dd/yyyy}", new { @class = "form-control" })
+                                    <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+                                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                                </div>
+                            </div>
+                        }
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.RushJob)<br />
+                        @Html.RadioButtonFor(m => m.RushJob, "No", new { @checked = "checked" }) No
+                        @Html.RadioButtonFor(m => m.RushJob, "24 Hour Rush", new { title = " - Abount Turnaround Times \n  - Rushed Orders ($100 Rush Fee) \n 1 Business Day* (Orders approved before 11AM) \n *Allow 2 Business Days for rushed 9 x 12 Mailings \n -Standard Orders \n 2 Business Days(Orders approved before 1PM)  \n 3 Business Days(Orders approved after 1PM) \n - Large Orders \n - Contact support.TBENesys@samrtsourcellc.com for \n best delivery schedule" })24 Hour Rush
+                    </div>
+                        <div class="form-group"> 
+                            @Html.LabelFor(m => m.SpecialInstructions)
+                            @Html.TextBoxFor(m => m.SpecialInstructions, new { @placeholder = "SpecialInstructions", @class = "form-control" })
+                        </div>
+                        <div class="form-group">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="clear"></div>
+}
+
+<div class="modal fade" id="myModalNonApprovalTerms" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Order Terms</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" id="ModelBody" style="font-size:14px;">
+                    SPD Booklets and "Post Cards" are <span style="text-decoration:underline;">NOT</span> to be uploaded through OrderFlow. Please send via SECURE email to <span style="color:blue;">jrusca@grandflow.com</span> and Cc <span style="color:blue;">customerservice@grandflow.com</span>. Thank You.<br />
+                    <span style="font-size:16px;">Terms and Conditions</span><br />
+                    Buyer shall pay all taxes and charges imposed by any State or National legislation now or hereafter enacted and for all increased cost of these goods cause by any taxes and charges imposed by such legislation.<br />
+                    Delivery of all or any part of this order is contingent upon seller's ability to obtain supplies and raw materials.<br />
+                    Customer agrees to pay all collection cost, including attorney's fees and court costs and any other reasonable expenses and costs permitted by law. In such cases, invoices will not be considered paid in full until these charges are collected.<br />
+                    Invoices must be paid on Net 30 day terms.<br />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="submitTerms();">I agree to these terms</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="rejectTerms();">Cancel this transaction</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script type="text/javascript" src="~/bootstrap-datetimepicker-master/js/bootstrap-datetimepicker.js" charset="UTF-8"></script>
+
+
+    <script type="text/javascript">
+
+        jQuery(document).ready(function () {
+
+            $('#datetimepicker').datetimepicker({
+                minDate: new Date()
+            });
+
+            $('.form_date').datetimepicker({
+                defaultDate: new Date(),
+                minDate: new Date(),
+                startDate: new Date(),
+                format: 'MM/dd/yyyy',
+                weekStart: 1,
+                todayBtn: 1,
+                autoclose: 1,
+                todayHighlight: 1,
+                startView: 2,
+                minView: 2,
+                forceParse: 0,
+
+            });
+            CheckOrderComplete();
+
+            function CheckOrderComplete() {
+                var JN = $("#JobName").val();
+                var PQ = $("#Printquantity").val();
+                var MDD = $("#MailDropDate").val();
+                var ONB = $("#OrderNeededBy").val();
+
+                $('#ProceedToCheckout').attr('disabled', true);
+                var MLPresent = '@Model.MLPresent';
+
+                if (MLPresent == 'True') {
+                    var result = '@Model.OrderDetailsFilled';
+                    if (result == 'True' && JN != '' && MDD.length > 0) {
+                        $('#ProceedToCheckout').attr('disabled', false);
+                    }
+                }
+
+                else {
+                    // Check Print quantity & Order needed by along with order details
+                    var result = '@Model.OrderDetailsFilled';
+                    if (result == 'True' && JN != '' && parseInt(PQ) > 0 && ONB.length > 0 ) {
+                        $('#ProceedToCheckout').attr('disabled', false);
+                    }
+                }
+
+            }
+
+
+            $('#JobName').change(function () {
+                CheckOrderComplete();
+            })
+
+            $('#Printquantity').change(function () {
+                CheckOrderComplete();
+                getNumericValue();
+            })
+
+            $('#MailDropDate').change(function () {
+                CheckOrderComplete();
+            })
+
+            $('#OrderNeededBy').change(function () {
+                CheckOrderComplete();
+            })
+
+            var ST = '@Model.TermsAccepted';
+            if (ST == 'Not Yet') {
+                jQuery.noConflict();
+                $('#myModalNonApprovalTerms').modal('show');
+            }
+        });
+
+        function submitTerms() {
+            $.post('@Url.Action("SubmitTermsAccepted", "Order")');
+        }
+
+        function rejectTerms() {
+            $.post('@Url.Action("SubmitTermsRejected", "Order")');
+        }
+
+        function allnumeric(inputtxt) {
+            var numbers = /^[0-9]+$/;
+            if (inputtxt.value.match(numbers)) {
+                document.form1.text1.focus();
+                return true;
+            }
+            else {
+                alert('Please input numeric characters only');
+                document.form1.text1.focus();
+                return false;
+            }
+        }
+
+        function getNumericValue() {
+            var num = document.getElementById("Printquantity").value;
+
+            if (num.match(/^\d+/)) {
+                document.getElementById("alert").style.display = "block";
+
+                setTimeout(function () {
+                    document.getElementById("alert").style.display = "none";
+                }, 3000);
+
+            } else {
+                alert('Please enter numbers only. without commas (i.e 150000)');
+
+            }
+
+        }
+    </script>
+}
+

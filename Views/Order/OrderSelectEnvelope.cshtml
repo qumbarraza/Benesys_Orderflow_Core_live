@@ -1,0 +1,148 @@
+﻿@model TBENesys_Orderflow_Core.ViewModels.OrderSelectEnvelopViewModel
+
+@{
+    ViewData["Title"] = @Model.PageTitle;
+}
+
+@section styles{
+    <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/dataTables.jqueryui.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.0.1/css/buttons.dataTables.min.css" />
+
+    <style>
+
+        .card-body {
+            font-size: 15px;
+        }
+
+        .card-body a {
+            font-size: 15px;
+        }
+
+        .card-body p {
+            font-size: 15px;
+        }
+
+        .form-group label {
+            font-size: 15px !important;
+        }
+    </style>
+}
+@section Breadcrumbs{
+    <h3 class="page-title">Select Address</h3>
+}
+@section Scripts{
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/dataTables.jqueryui.min.js"></script>
+
+    <script src="https://cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.html5.min.js"></script>
+
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+
+            $('#dtTable').DataTable({
+                "bSortClasses": false,
+                'paging': false,
+                'lengthChange': false,
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Show All"]],
+                'searching': true,
+                'ordering': true,
+                'info': true,
+                'autoWidth': true,
+                columnDefs: [
+                    { orderable: false, targets: -1 }
+                ],
+                dom: 'Blfrtip',
+                buttons: [
+
+                ]
+            })
+
+        });
+    </script>
+}
+<div class="col-lg-12">
+    <div class="card">
+        <div class="card-title">
+            @if (@ViewBag.ResultMessage != null && @ViewBag.ResultMessage.ToString().Contains("Error"))
+            {
+                <div class="alert alert-danger">@ViewBag.ResultMessage</div>
+            }
+            else if (@ViewBag.ResultMessage != null)
+            {
+                <div class="alert alert-success">@ViewBag.ResultMessage</div>
+            }
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    <button class="close" data-dismiss="alert"></button>
+                    @Html.ValidationSummary()
+                </div>
+            }
+            @if (Model.Response != null)
+            {
+                @Html.Partial("_MessagePartial", Model.Response)
+            }
+            <div class="clear"></div>
+        </div>
+        <div class="card-body">
+            <div class="card-body">
+                <table id="dtTable" class="display table table-bordered table-hover" style="width:100%;font-size:13px;">
+                    <thead>
+                        <tr>
+                            <th><b>Select</b></th>
+                            <th><b>Address</b></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Envelops.Count > 0)
+                        {
+                            foreach (var item in Model.Envelops)
+                            {
+                                string envelopeContent1 = "";
+                                string envelopeContent2 = "";
+                                if (!String.IsNullOrEmpty(item.MainContent))
+                                    envelopeContent1 = envelopeContent1 + item.MainContent;
+
+                                if (!String.IsNullOrEmpty(item.SubContent2))
+                                    envelopeContent1 = envelopeContent1 + ", " + item.SubContent2;
+
+                                if (!string.IsNullOrEmpty(item.SubContent3))
+                                    envelopeContent2 = envelopeContent2 + ", " + item.SubContent3;
+
+                                //if (!String.IsNullOrEmpty(item.SubContent5))
+                                //    envelopeContent2 = envelopeContent2 + ", " + item.SubContent5;
+
+                                    //if (!string.IsNullOrEmpty(item.MainContent))
+                                    //    envelopeContent2 = envelopeContent2 + item.MainContent;
+                                    //if (!String.IsNullOrEmpty(item.SubContent6))
+                                    //    envelopeContent2 = envelopeContent2 + ", " + item.SubContent6;
+
+
+                                <tr>
+                                    <td style="width:13%">
+                                        <a style="color: #ffffff; font-size: 15px;" title="Envelope" href="@Url.Action("EnvelopeSelected" , new { id = item.lngID })" class="btn btn-primary mr-2">Envelope</a>
+                                    </td>
+                                    <td style="width:87%;word-wrap: break-word;font-size:15px;">@envelopeContent1 <br />@envelopeContent2</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="2">No records found.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="clear"></div>
+
+
+

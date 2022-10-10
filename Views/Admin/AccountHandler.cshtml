@@ -1,0 +1,102 @@
+﻿@model TBENesys_Orderflow_Core.ViewModels.AccountHandlerViewModel
+
+@{
+    string ActionText = "";
+    if (Model.lngID.HasValue)
+    {
+        ViewBag.Title = "Update Account for " + Model.Name;
+        ActionText = "Update";
+    }
+    else
+    {
+        ViewBag.Title = "New Account";
+        ActionText = "Save";
+    }
+}
+@section styles{
+    <link rel="stylesheet" type="text/css" href="~/multiselect/example-styles.css" />
+}
+
+@using (Html.BeginForm("AccountHandler", "Admin", FormMethod.Post, new { @class = "col-lg-12" }))
+{
+    @Html.HiddenFor(d => d.lngID)
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">@ViewBag.Title</h4>
+                <p class="card-description">
+                </p>
+                <form class="forms-sample">
+                    <div class="form-group">
+                        @if (@ViewBag.ResultMessage != null && @ViewBag.ResultMessage.ToString().Contains("Error"))
+                        {
+                            <div class="alert alert-danger">@ViewBag.ResultMessage</div>
+                        }
+                        else if (@ViewBag.ResultMessage != null)
+                        {
+                            <div class="alert alert-success">@ViewBag.ResultMessage</div>
+                        }
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger">
+                                <button class="close" data-dismiss="alert"></button>
+                                @Html.ValidationSummary()
+                            </div>
+                        }
+                        <div class="clear"></div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Name)
+                        @Html.TextBoxFor(m => m.Name, new { @placeholder = "Full Name", @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.UserID)
+                        @Html.TextBoxFor(m => m.UserID, new { @placeholder = "User ID", @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Pwd)
+                        @Html.TextBoxFor(m => m.Pwd, new { @placeholder = "Password", @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Email)
+                        @Html.TextBoxFor(m => m.Email, new { @placeholder = "Email", @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Location)
+                        @Html.DropDownListFor(x => x.Location, new SelectList(Model.AllLocations, "Value", "Text"), "-- Select Location --", new { Class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.AccountRoleID)<br />
+                        @*@Html.DisplayTextFor(m => m.ViewSelectedAccountRoles)*@
+                        <select id="dropDownList-example" name="SelectedAccountRoles" asp-items="@Model.AllAcountRoles" multiple class="form-control"></select>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Active)
+                        @Html.CheckBoxFor(m => m.Active, new { @class = "" })
+                    </div>
+                    <button type="submit" class="btn btn-primary mr-2"> @ActionText </button>
+                    <a href="@Url.Action("AccountListing")" class="btn btn-light">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+
+@section Scripts{
+    <script src="~/multiselect/jquery.multi-select.js"></script>
+    <script>
+        $(document).ready(function () {
+            var allValues = "@Model.AccountRoleID";
+            if (allValues.length > 0) {
+                var selectedOptions = allValues.split(",");
+                for (var i in selectedOptions) {
+                    var optionVal = selectedOptions[i];
+                    $("#dropDownList-example").find("option[value=" + optionVal + "]").prop("selected", "selected");
+                }
+            }
+            $('#dropDownList-example').multiSelect();
+            });
+    </script>
+
+}

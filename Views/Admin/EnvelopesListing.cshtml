@@ -1,0 +1,123 @@
+﻿@model TBENesys_Orderflow_Core.ViewModels.EnvelopesListingViewModel
+
+@{
+    ViewData["Title"] = @Model.PageTitle;
+}
+
+@section styles{
+    <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/dataTables.jqueryui.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.0.1/css/buttons.dataTables.min.css" />
+}
+@section Breadcrumbs{
+    <h3 class="page-title">@Model.PageTitle</h3>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href=@Url.Action("Index", "Order" )>Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page"> <a style="display:inline !important;" href=@Url.Action("EnvelopeHandler", "Admin" )>New Envelope</a> </li>
+            <li class="breadcrumb-item active" aria-current="page"> <a style="display:inline !important;" href=@Url.Action("UploadEnvelope", "Admin" )>Upload Envelope</a> </li>
+        </ol>
+    </nav>
+}
+<div class="col-lg-12">
+    <div class="card">
+        <div class="card-title">
+            @if (@ViewBag.ResultMessage != null && @ViewBag.ResultMessage.ToString().Contains("Error"))
+            {
+                <div class="alert alert-danger">@ViewBag.ResultMessage</div>
+            }
+            else if (@ViewBag.ResultMessage != null)
+            {
+                <div class="alert alert-success">@ViewBag.ResultMessage</div>
+            }
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    <button class="close" data-dismiss="alert"></button>
+                    @Html.ValidationSummary()
+                </div>
+            }
+            @if (Model.Response != null)
+            {
+                @Html.Partial("_MessagePartial", Model.Response)
+            }
+            <div class="clear"></div>
+        </div>
+        <div class="card-body">
+            <table id="dtTable" class="display table table-bordered table-hover" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th><b>Cost Center</b></th>
+                        <th><b>Address</b></th>
+                        <th style="text-align:center;"><b>Actions</b></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Records.Count > 0)
+                    {
+                        foreach (var item in Model.Records)
+                        {
+                            <tr>
+                                <td style=" width: 27%;">@Html.ActionLink((!String.IsNullOrEmpty(item.MainContent) ? item.MainContent : "-"), "EnvelopeHandler", new { ID = item.lngID })</td>
+                                <td style=" width: 60%; word-wrap: break-word;">
+                                    @Html.ActionLink((item.SubContent2 + ", "), "EnvelopeHandler", new { ID = item.lngID })<br />
+                                    @Html.ActionLink((item.SubContent3 + ", " + item.SubContent4 + ", "), "EnvelopeHandler", new { ID = item.lngID })<br />
+                                    @Html.ActionLink((item.SubContent5 + ", " + item.SubContent6), "EnvelopeHandler", new { ID = item.lngID })
+
+                                </td>
+                                <td style="width:13%;text-align:center;">
+                                    <a style="color: #0033C4; font-size: 20px;" title="Edit" href="@Url.Action("EnvelopeHandler" , new { ID = item.lngID })"><i class="mdi mdi-lead-pencil"></i></a>
+                                    <a style="color: red; font-size: 20px;" title="Delete" href="@Url.Action("DeleteEnvelope" , new { id = item.lngID })" onclick="return confirm('Are you sure you want to delete record ?');"><i class="mdi mdi-delete-forever"></i></a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7">No records found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="clear"></div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/dataTables.jqueryui.min.js"></script>
+
+    <script src="https://cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.html5.min.js"></script>
+
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+
+            $('#dtTable').DataTable({
+                "bSortClasses": false,
+                'paging': true,
+                'lengthChange': true,
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Show All"]],
+                'searching': true,
+                'ordering': true,
+                'info': true,
+                'autoWidth': true,
+                columnDefs: [
+                    { orderable: false, targets: -1 }
+                ],
+                dom: 'Blfrtip',
+                buttons: [
+                    'excel', 'csv'
+                ]
+            })
+
+        });
+    </script>
+}
+

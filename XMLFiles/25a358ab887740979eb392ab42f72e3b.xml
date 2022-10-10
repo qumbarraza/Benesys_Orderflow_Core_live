@@ -1,0 +1,140 @@
+<cXML timestamp="2022-6-22-21:37:30" payloadId="e8e923b2-ef40-48e3-8fc1-d0d000b4450a">
+  <Header>
+    <From>
+      <Credentials domain="DUNS">
+        <Identity>0300006415</Identity>
+      </Credentials>
+    </From>
+    <To>
+      <Credentials domain="Ad-hoc">
+        <Identity>Smart Source of GA</Identity>
+      </Credentials>
+    </To>
+    <Sender>
+      <Credentials domain="Ad-hoc">
+        <Identity>TBEN-8385-00139012</Identity>
+      </Credentials>
+    </Sender>
+  </Header>
+  <Request deploymentMode="production">
+    <OrderRequest>
+      <OrderRequestHeader orderDate="2022-6-22-21:37:30" orderID="TBEN-8385">
+        <BillTo>
+          <Address>
+            <PostalAddress name="default">
+              <DeliverTo>Q500</DeliverTo>
+              <Street>3737 CAMINO DEL RIO SOUTH, SUITE 300</Street>
+              <Street />
+              <City>SAN DIEGO</City>
+              <State>CA</State>
+              <PostalCode>92108</PostalCode>
+              <Country isoCountryCode="US">United States</Country>
+              <Extrinsic name="costCenter">
+              </Extrinsic>
+            </PostalAddress>
+            <Name>
+            </Name>
+            <Email>
+            </Email>
+            <Phone>
+            </Phone>
+            <Extrinsic name="costCenter">D100</Extrinsic>
+            <Extrinsic />
+            <Extrinsic />
+          </Address>
+        </BillTo>
+        <Shipping>
+          <Description>Ground</Description>
+        </Shipping>
+        <Comments />
+        <Extrinsic name="BuyerID">0300006415</Extrinsic>
+      </OrderRequestHeader>
+      <ItemOut quantity="1" lineNumber="1">
+        <ItemID>
+          <SupplierPartID>PRINT</SupplierPartID>
+        </ItemID>
+        <ItemDetail>
+          <Description />
+          <Extrinsic name="costCenter">D100</Extrinsic>
+          <Extrinsic name="TBENSYSUnitCost">0.015</Extrinsic>
+          <Extrinsic name="TBENSYSUnitSell">
+          </Extrinsic>
+          <Extrinsic name="TBENSYSPO_Code">1</Extrinsic>
+        </ItemDetail>
+        <ShipTo>
+          <Address>
+            <PostalAddress name="default">
+              <DeliverTo>Q500</DeliverTo>
+              <Street>3737 CAMINO DEL RIO SOUTH, SUITE 300</Street>
+              <City>SAN DIEGO</City>
+              <State>CA</State>
+              <PostalCode>92108</PostalCode>
+              <Country isoCountryCode="US">United States</Country>
+              <Extrinsic name="costCenter" />
+            </PostalAddress>
+            <Name>Steve Boyett</Name>
+            <Email>sboyett@smartsourcellc.com</Email>
+            <Phone>7704496300</Phone>
+          </Address>
+        </ShipTo>
+      </ItemOut>
+      <ItemOut quantity="1" lineNumber="2">
+        <ItemID>
+          <SupplierPartID>MAILING</SupplierPartID>
+        </ItemID>
+        <ItemDetail>
+          <Description />
+          <Extrinsic name="costCenter">D100</Extrinsic>
+          <Extrinsic name="TBENSYSUnitCost">45</Extrinsic>
+          <Extrinsic name="TBENSYSUnitSell">
+          </Extrinsic>
+          <Extrinsic name="TBENSYSPO_Code">1</Extrinsic>
+        </ItemDetail>
+        <ShipTo>
+          <Address>
+            <PostalAddress name="default">
+              <DeliverTo>Q500</DeliverTo>
+              <Street>3737 CAMINO DEL RIO SOUTH, SUITE 300</Street>
+              <City>SAN DIEGO</City>
+              <State>CA</State>
+              <PostalCode>92108</PostalCode>
+              <Country isoCountryCode="US">United States</Country>
+              <Extrinsic name="costCenter" />
+            </PostalAddress>
+            <Name>Steve Boyett</Name>
+            <Email>sboyett@smartsourcellc.com</Email>
+            <Phone>7704496300</Phone>
+          </Address>
+        </ShipTo>
+      </ItemOut>
+      <ItemOut quantity="0" lineNumber="3">
+        <ItemID>
+          <SupplierPartID>POSTAGE</SupplierPartID>
+        </ItemID>
+        <ItemDetail>
+          <Description />
+          <Extrinsic name="costCenter">D100</Extrinsic>
+          <Extrinsic name="TBENSYSUnitCost">0</Extrinsic>
+          <Extrinsic name="TBENSYSUnitSell">0</Extrinsic>
+          <Extrinsic name="TBENSYSPO_Code">1</Extrinsic>
+        </ItemDetail>
+        <ShipTo>
+          <Address>
+            <PostalAddress name="default">
+              <DeliverTo>Q500</DeliverTo>
+              <Street>3737 CAMINO DEL RIO SOUTH, SUITE 300</Street>
+              <City>SAN DIEGO</City>
+              <State>CA</State>
+              <PostalCode>92108</PostalCode>
+              <Country isoCountryCode="US">United States</Country>
+              <Extrinsic name="costCenter" />
+            </PostalAddress>
+            <Name>Steve Boyett</Name>
+            <Email>sboyett@smartsourcellc.com</Email>
+            <Phone>7704496300</Phone>
+          </Address>
+        </ShipTo>
+      </ItemOut>
+    </OrderRequest>
+  </Request>
+</cXML>

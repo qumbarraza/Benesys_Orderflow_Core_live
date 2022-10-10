@@ -1,0 +1,140 @@
+<cXML timestamp="2022-7-7-20:12:55" payloadId="b4177932-96f6-493a-83b9-1806c1a51774">
+  <Header>
+    <From>
+      <Credentials domain="DUNS">
+        <Identity>0300006415</Identity>
+      </Credentials>
+    </From>
+    <To>
+      <Credentials domain="Ad-hoc">
+        <Identity>Smart Source of GA</Identity>
+      </Credentials>
+    </To>
+    <Sender>
+      <Credentials domain="Ad-hoc">
+        <Identity>TBEN-8010-00139012</Identity>
+      </Credentials>
+    </Sender>
+  </Header>
+  <Request deploymentMode="production">
+    <OrderRequest>
+      <OrderRequestHeader orderDate="2022-7-7-20:12:55" orderID="TBEN-8010">
+        <BillTo>
+          <Address>
+            <PostalAddress name="default">
+              <DeliverTo>P300</DeliverTo>
+              <Street>P.O. BOX 3420</Street>
+              <Street />
+              <City>SAN RAMON</City>
+              <State>CA</State>
+              <PostalCode>94583</PostalCode>
+              <Country isoCountryCode="US">United States</Country>
+              <Extrinsic name="costCenter">
+              </Extrinsic>
+            </PostalAddress>
+            <Name>
+            </Name>
+            <Email>
+            </Email>
+            <Phone>
+            </Phone>
+            <Extrinsic name="costCenter">P300</Extrinsic>
+            <Extrinsic />
+            <Extrinsic />
+          </Address>
+        </BillTo>
+        <Shipping>
+          <Description>UPS</Description>
+        </Shipping>
+        <Comments />
+        <Extrinsic name="BuyerID">0300006415</Extrinsic>
+      </OrderRequestHeader>
+      <ItemOut quantity="1" lineNumber="1">
+        <ItemID>
+          <SupplierPartID>PRINT</SupplierPartID>
+        </ItemID>
+        <ItemDetail>
+          <Description />
+          <Extrinsic name="costCenter">P300</Extrinsic>
+          <Extrinsic name="TBENSYSUnitCost">2.4900700000000002</Extrinsic>
+          <Extrinsic name="TBENSYSUnitSell">
+          </Extrinsic>
+          <Extrinsic name="TBENSYSPO_Code">1</Extrinsic>
+        </ItemDetail>
+        <ShipTo>
+          <Address>
+            <PostalAddress name="default">
+              <DeliverTo>P300</DeliverTo>
+              <Street>P.O. BOX 3420</Street>
+              <City>SAN RAMON</City>
+              <State>CA</State>
+              <PostalCode>94583</PostalCode>
+              <Country isoCountryCode="US">United States</Country>
+              <Extrinsic name="costCenter" />
+            </PostalAddress>
+            <Name>Steve Boyett</Name>
+            <Email>sboyett@smartsourcellc.com</Email>
+            <Phone>7704496300</Phone>
+          </Address>
+        </ShipTo>
+      </ItemOut>
+      <ItemOut quantity="1" lineNumber="2">
+        <ItemID>
+          <SupplierPartID>MAILING</SupplierPartID>
+        </ItemID>
+        <ItemDetail>
+          <Description />
+          <Extrinsic name="costCenter">P300</Extrinsic>
+          <Extrinsic name="TBENSYSUnitCost">435.3959999999999</Extrinsic>
+          <Extrinsic name="TBENSYSUnitSell">
+          </Extrinsic>
+          <Extrinsic name="TBENSYSPO_Code">1</Extrinsic>
+        </ItemDetail>
+        <ShipTo>
+          <Address>
+            <PostalAddress name="default">
+              <DeliverTo>P300</DeliverTo>
+              <Street>P.O. BOX 3420</Street>
+              <City>SAN RAMON</City>
+              <State>CA</State>
+              <PostalCode>94583</PostalCode>
+              <Country isoCountryCode="US">United States</Country>
+              <Extrinsic name="costCenter" />
+            </PostalAddress>
+            <Name>Steve Boyett</Name>
+            <Email>sboyett@smartsourcellc.com</Email>
+            <Phone>7704496300</Phone>
+          </Address>
+        </ShipTo>
+      </ItemOut>
+      <ItemOut quantity="3" lineNumber="3">
+        <ItemID>
+          <SupplierPartID>POSTAGE</SupplierPartID>
+        </ItemID>
+        <ItemDetail>
+          <Description />
+          <Extrinsic name="costCenter">P300</Extrinsic>
+          <Extrinsic name="TBENSYSUnitCost">0</Extrinsic>
+          <Extrinsic name="TBENSYSUnitSell">0</Extrinsic>
+          <Extrinsic name="TBENSYSPO_Code">1</Extrinsic>
+        </ItemDetail>
+        <ShipTo>
+          <Address>
+            <PostalAddress name="default">
+              <DeliverTo>P300</DeliverTo>
+              <Street>P.O. BOX 3420</Street>
+              <City>SAN RAMON</City>
+              <State>CA</State>
+              <PostalCode>94583</PostalCode>
+              <Country isoCountryCode="US">United States</Country>
+              <Extrinsic name="costCenter" />
+            </PostalAddress>
+            <Name>Steve Boyett</Name>
+            <Email>sboyett@smartsourcellc.com</Email>
+            <Phone>7704496300</Phone>
+          </Address>
+        </ShipTo>
+      </ItemOut>
+    </OrderRequest>
+  </Request>
+</cXML>

@@ -1,0 +1,668 @@
+﻿@model TBENesys_Orderflow_Core.ViewModels.InvoiceHandlerViewModel
+
+@{
+    string ActionText = "";
+    ViewBag.Title = "Billing Form";
+    ActionText = "Update";
+}
+
+
+
+@using (Html.BeginForm("EditInvoice", "Admin", FormMethod.Post, new { @class = "col-lg-12" }))
+{
+    @Html.HiddenFor(m => m.orderID)
+    @Html.HiddenFor(m => m.lngID)
+
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">@ViewBag.Title</h4>
+                <p class="card-description">
+                </p>
+                <form class="forms-sample">
+                    <div class="form-group">
+                        @if (@ViewBag.ResultMessage != null && @ViewBag.ResultMessage.ToString().Contains("Error"))
+                        {
+                            <div class="alert alert-danger">@ViewBag.ResultMessage</div>
+                        }
+                        else if (@ViewBag.ResultMessage != null)
+                        {
+                            <div class="alert alert-success">@ViewBag.ResultMessage</div>
+                        }
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger">
+                                <button class="close" data-dismiss="alert"></button>
+                                @Html.ValidationSummary()
+                            </div>
+                        }
+                        <div class="clear"></div>
+                    </div>
+                    @Html.HiddenFor(m => m.lngID)
+                    <table id="dtTablePrinting" class="display table table-bordered table-hover" style="max-width:100%;">
+                        <thead>
+                            <tr>
+                                <th style="width:20%;"><b>TBENeSys Printing Services</b></th>
+                                <th style="width:10%;"><b>Size</b></th>
+                                <th style="width:10%;"><b>Qty</b></th>
+                                <th style="width:10%;"><b>UOM</b></th>
+                                <th style="width:10%;"><b>Unit Cost</b></th>
+                                <th style="width:10%;"><b>Ext Cost</b></th>
+                                <th style="width:10%;"><b>Unit Sell</b></th>
+                                <th style="width:10%;"><b>Ext Sell</b></th>
+                                <th style="width:10%;"><b>Min Ext Sell</b></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                @Html.HiddenFor(m => m.il1linetype)
+                                @Html.HiddenFor(m => m.il1display)
+                                @Html.HiddenFor(m => m.il1name)
+                                @Html.HiddenFor(m => m.il1size)
+                                @Html.HiddenFor(m => m.il1UOM)
+                                <td>@Html.Raw(Model.il1name)</td>
+                                <td>@Model.il1size</td>
+                                <td>@Html.TextBoxFor(m => Model.il1qty, new { @class = "form-control" })</td>
+                                <td>@Model.il1UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il1unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il1extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il1unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il1extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il1minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il2linetype)
+                                @Html.HiddenFor(m => m.il2display)
+                                @Html.HiddenFor(m => m.il2name)
+                                @Html.HiddenFor(m => m.il2size)
+                                @Html.HiddenFor(m => m.il2UOM)
+                                <td>@Html.Raw(Model.il2name)</td>
+                                <td>@Model.il2size</td>
+                                <td>@Html.TextBoxFor(m => Model.il2qty, new { @class = "form-control" })</td>
+                                <td>@Model.il2UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il2unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il2extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il2unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il2extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il2minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il3linetype)
+                                @Html.HiddenFor(m => m.il3display)
+                                @Html.HiddenFor(m => m.il3name)
+                                @Html.HiddenFor(m => m.il3size)
+                                @Html.HiddenFor(m => m.il3UOM)
+                                <td>@Html.Raw(Model.il3name)</td>
+                                <td>@Model.il3size</td>
+                                <td>@Html.TextBoxFor(m => Model.il3qty, new { @class = "form-control" })</td>
+                                <td>@Model.il3UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il3unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il3extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il3unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il3extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il3minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il4linetype)
+                                @Html.HiddenFor(m => m.il4display)
+                                @Html.HiddenFor(m => m.il4name)
+                                @Html.HiddenFor(m => m.il4size)
+                                @Html.HiddenFor(m => m.il4UOM)
+                                <td>@Html.Raw(Model.il4name)</td>
+                                <td>@Model.il4size</td>
+                                <td>@Html.TextBoxFor(m => Model.il4qty, new { @class = "form-control" })</td>
+                                <td>@Model.il4UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il4unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il4extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il4unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il4extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il4minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il5linetype)
+                                @Html.HiddenFor(m => m.il5display)
+                                @Html.HiddenFor(m => m.il5name)
+                                @Html.HiddenFor(m => m.il5size)
+                                @Html.HiddenFor(m => m.il5UOM)
+                                <td>@Html.Raw(Model.il5name)</td>
+                                <td>@Model.il5size</td>
+                                <td>@Html.TextBoxFor(m => Model.il5qty, new { @class = "form-control" })</td>
+                                <td>@Model.il5UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il5unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il5extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il5unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il5extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il5minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il6linetype)
+                                @Html.HiddenFor(m => m.il6display)
+                                @Html.HiddenFor(m => m.il6name)
+                                @Html.HiddenFor(m => m.il6size)
+                                @Html.HiddenFor(m => m.il6UOM)
+                                <td>@Html.Raw(Model.il6name)</td>
+                                <td>@Model.il6size</td>
+                                <td>@Html.TextBoxFor(m => Model.il6qty, new { @class = "form-control" })</td>
+                                <td>@Model.il6UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il6unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il6extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il6unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il6extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il6minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il7linetype)
+                                @Html.HiddenFor(m => m.il7display)
+                                @Html.HiddenFor(m => m.il7name)
+                                @Html.HiddenFor(m => m.il7size)
+                                @Html.HiddenFor(m => m.il7UOM)
+                                <td>@Html.Raw(Model.il7name)</td>
+                                <td>@Model.il7size</td>
+                                <td>@Html.TextBoxFor(m => Model.il7qty, new { @class = "form-control" })</td>
+                                <td>@Model.il7UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il7unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il7extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il7unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il7extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il7minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il8linetype)
+                                @Html.HiddenFor(m => m.il8display)
+                                @Html.HiddenFor(m => m.il8name)
+                                @Html.HiddenFor(m => m.il8size)
+                                @Html.HiddenFor(m => m.il8UOM)
+                                <td>@Html.Raw(Model.il8name)</td>
+                                <td>@Model.il8size</td>
+                                <td>@Html.TextBoxFor(m => Model.il8qty, new { @class = "form-control" })</td>
+                                <td>@Model.il8UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il8unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il8extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il8unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il8extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il8minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il9linetype)
+                                @Html.HiddenFor(m => m.il9display)
+                                @Html.HiddenFor(m => m.il9name)
+                                @Html.HiddenFor(m => m.il9size)
+                                @Html.HiddenFor(m => m.il9UOM)
+                                <td>@Html.Raw(Model.il9name)</td>
+                                <td>@Model.il9size</td>
+                                <td>@Html.TextBoxFor(m => Model.il9qty, new { @class = "form-control" })</td>
+                                <td>@Model.il9UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il9unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il9extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il9unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il9extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il9minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il10linetype)
+                                @Html.HiddenFor(m => m.il10display)
+                                @Html.HiddenFor(m => m.il10size)
+                                @Html.HiddenFor(m => m.il10UOM)
+                                <td>@Html.TextBoxFor(m => Model.il10name, new { @placeholder = "Additional Charge", @class = "form-control" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il10size, new { @class = "form-control" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il10qty, new { @class = "form-control" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il10UOM, new { @placeholder = "Additional Charge", @class = "form-control" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il10unitCost, new { @class = "form-control" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il10extCost, new { @class = "form-control" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il10unitSell, new { @class = "form-control" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il10extSell, new { @class = "form-control" })</td>
+                                <td>@Model.il10minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il11linetype)
+                                @Html.HiddenFor(m => m.il11display)
+                                @Html.HiddenFor(m => m.il11name)
+                                @Html.HiddenFor(m => m.il11size)
+                                @Html.HiddenFor(m => m.il11UOM)
+                                <td><b>@Html.Raw(Model.il11name)</b></td>
+                                <td>@Model.il11size</td>
+                                <td>@Html.TextBoxFor(m => Model.il11qty, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il11UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il11unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il11extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il11unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il11extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il11minExtSell</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table id="dtTableMailing" class="display table table-bordered table-hover" style="max-width:100%;">
+                        <thead>
+                            <tr>
+                                <th style="width:30.5%;"><b>TBENeSys Mailing Services</b></th>
+                                <th style="width:10%;"><b>Qty</b></th>
+                                <th style="width:10%;"><b>UOM</b></th>
+                                <th style="width:10%;"><b>Unit Cost</b></th>
+                                <th style="width:10%;"><b>Ext Cost</b></th>
+                                <th style="width:10%;"><b>Unit Sell</b></th>
+                                <th style="width:10%;"><b>Ext Sell</b></th>
+                                <th style="width:10%;"><b>Min Ext Sell</b></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                @Html.HiddenFor(m => m.il20linetype)
+                                @Html.HiddenFor(m => m.il20display)
+                                @Html.HiddenFor(m => m.il20name)
+                                @Html.HiddenFor(m => m.il20size)
+                                @Html.HiddenFor(m => m.il20UOM)
+                                <td>@Html.Raw(Model.il20name)</td>
+                                <td>@Html.TextBoxFor(m => Model.il20qty, new { @class = "form-control" })</td>
+                                <td>@Model.il20UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il20unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il20extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il20unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il20extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il20minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il21linetype)
+                                @Html.HiddenFor(m => m.il21display)
+                                @Html.HiddenFor(m => m.il21name)
+                                @Html.HiddenFor(m => m.il21size)
+                                @Html.HiddenFor(m => m.il21UOM)
+                                <td>@Html.Raw(Model.il21name)</td>
+                                <td>@Html.TextBoxFor(m => Model.il21qty, new { @class = "form-control" })</td>
+                                <td>@Model.il21UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il21unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il21extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il21unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il21extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il21minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il22linetype)
+                                @Html.HiddenFor(m => m.il22display)
+                                @Html.HiddenFor(m => m.il22name)
+                                @Html.HiddenFor(m => m.il22size)
+                                @Html.HiddenFor(m => m.il22UOM)
+                                <td>@Html.Raw(Model.il22name)</td>
+                                <td>@Html.TextBoxFor(m => Model.il22qty, new { @class = "form-control" })</td>
+                                <td>@Model.il22UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il22unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il22extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il22unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il22extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il22minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il23linetype)
+                                @Html.HiddenFor(m => m.il23display)
+                                @Html.HiddenFor(m => m.il23name)
+                                @Html.HiddenFor(m => m.il23size)
+                                @Html.HiddenFor(m => m.il23UOM)
+                                <td>@Html.Raw(Model.il23name)</td>
+                                <td>@Html.TextBoxFor(m => Model.il23qty, new { @class = "form-control" })</td>
+                                <td>@Model.il23UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il23unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il23extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il23unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il23extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il23minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il24linetype)
+                                @Html.HiddenFor(m => m.il24display)
+                                @Html.HiddenFor(m => m.il24name)
+                                @Html.HiddenFor(m => m.il24size)
+                                @Html.HiddenFor(m => m.il24UOM)
+                                <td>@Html.Raw(Model.il24name)</td>
+                                <td>@Html.TextBoxFor(m => Model.il24qty, new { @class = "form-control" })</td>
+                                <td>@Model.il24UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il24unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il24extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il24unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il24extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il24minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il25linetype)
+                                @Html.HiddenFor(m => m.il25display)
+                                @Html.HiddenFor(m => m.il25name)
+                                @Html.HiddenFor(m => m.il25size)
+                                @Html.HiddenFor(m => m.il25UOM)
+                                <td>@Html.Raw(Model.il25name)</td>
+                                <td>@Html.TextBoxFor(m => Model.il25qty, new { @class = "form-control" })</td>
+                                <td>@Model.il25UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il25unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il25extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il25unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il25extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il25minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il26linetype)
+                                @Html.HiddenFor(m => m.il26display)
+                                @Html.HiddenFor(m => m.il26name)
+                                @Html.HiddenFor(m => m.il26size)
+                                @Html.HiddenFor(m => m.il26UOM)
+                                <td>@Html.Raw(Model.il26name)</td>
+                                <td>@Html.TextBoxFor(m => Model.il26qty, new { @class = "form-control" })</td>
+                                <td>@Model.il26UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il26unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il26extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il26unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il26extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il26minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il27linetype)
+                                @Html.HiddenFor(m => m.il27display)
+                                @Html.HiddenFor(m => m.il27name)
+                                @Html.HiddenFor(m => m.il27size)
+                                @Html.HiddenFor(m => m.il27UOM)
+                                <td>@Html.Raw(Model.il27name)</td>
+                                <td>@Html.TextBoxFor(m => Model.il27qty, new { @class = "form-control" })</td>
+                                <td>@Model.il27UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il27unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il27extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il27unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il27extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il27minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il28linetype)
+                                @Html.HiddenFor(m => m.il28display)
+                                @Html.HiddenFor(m => m.il28name)
+                                @Html.HiddenFor(m => m.il28size)
+                                @Html.HiddenFor(m => m.il28UOM)
+                                <td>@Html.Raw(Model.il28name)</td>
+                                <td>@Html.TextBoxFor(m => Model.il28qty, new { @class = "form-control" })</td>
+                                <td>@Model.il28UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il28unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il28extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il28unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il28extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il28minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il29linetype)
+                                @Html.HiddenFor(m => m.il29display)
+                                @Html.HiddenFor(m => m.il29name)
+                                @Html.HiddenFor(m => m.il29size)
+                                @Html.HiddenFor(m => m.il29UOM)
+                                <td>@Html.Raw(Model.il29name)</td>
+                                <td>@Html.TextBoxFor(m => Model.il29qty, new { @class = "form-control" })</td>
+                                <td>@Model.il29UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il29unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il29extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il29unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il29extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il29minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il30linetype)
+                                @Html.HiddenFor(m => m.il30display)
+                                @Html.HiddenFor(m => m.il30name)
+                                @Html.HiddenFor(m => m.il30size)
+                                @Html.HiddenFor(m => m.il30UOM)
+                                <td>@Html.Raw(Model.il30name)</td>
+                                <td>@Html.TextBoxFor(m => Model.il30qty, new { @class = "form-control" })</td>
+                                <td>@Model.il30UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il30unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il30extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il30unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il30extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il30minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il31linetype)
+                                @Html.HiddenFor(m => m.il31display)
+                                @Html.HiddenFor(m => m.il31name)
+                                @Html.HiddenFor(m => m.il31size)
+                                @Html.HiddenFor(m => m.il31UOM)
+                                <td>@Html.Raw(Model.il31name)</td>
+                                <td>@Html.TextBoxFor(m => Model.il31qty, new { @class = "form-control" })</td>
+                                <td>@Model.il31UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il31unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il31extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il31unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il31extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il31minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il32linetype)
+                                @Html.HiddenFor(m => m.il32display)
+                                @Html.HiddenFor(m => m.il32name)
+                                @Html.HiddenFor(m => m.il32size)
+                                @Html.HiddenFor(m => m.il32UOM)
+                                <td>@Html.Raw(Model.il32name)</td>
+                                <td>@Html.TextBoxFor(m => Model.il32qty, new { @class = "form-control" })</td>
+                                <td>@Model.il32UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il32unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il32extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il32unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il32extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il32minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il33linetype)
+                                @Html.HiddenFor(m => m.il33display)
+                                @Html.HiddenFor(m => m.il33name)
+                                @Html.HiddenFor(m => m.il33size)
+                                @Html.HiddenFor(m => m.il33UOM)
+                                <td>@Html.Raw(Model.il33name)</td>
+                                <td>@Html.TextBoxFor(m => Model.il33qty, new { @class = "form-control" })</td>
+                                <td>@Model.il33UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il33unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il33extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il33unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il33extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il33minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il34linetype)
+                                @Html.HiddenFor(m => m.il34display)
+                                @Html.HiddenFor(m => m.il34name)
+                                @Html.HiddenFor(m => m.il34size)
+                                @Html.HiddenFor(m => m.il34UOM)
+                                <td>@Html.Raw(Model.il34name)</td>
+                                <td>@Html.TextBoxFor(m => Model.il34qty, new { @class = "form-control" })</td>
+                                <td>@Model.il34UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il34unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il34extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il34unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il34extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Model.il34minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il35linetype)
+                                @Html.HiddenFor(m => m.il35display)
+                                @Html.HiddenFor(m => m.il35name)
+                                @Html.HiddenFor(m => m.il35size)
+                                @Html.HiddenFor(m => m.il35UOM)
+                                <td>@Html.TextBoxFor(m => Model.il35name, new { @class = "form-control" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il35qty, new { @class = "form-control" })</td>
+                                <td>@Model.il35UOM</td>
+                                <td>@Html.TextBoxFor(m => Model.il35unitCost, new { @class = "form-control" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il35extCost, new { @class = "form-control" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il35unitSell, new { @class = "form-control" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il35extSell, new { @class = "form-control" })</td>
+                                <td>@Model.il35minExtSell</td>
+                            </tr>
+                            <tr>
+                                @Html.HiddenFor(m => m.il36linetype)
+                                @Html.HiddenFor(m => m.il36display)
+                                @Html.HiddenFor(m => m.il36name)
+                                @Html.HiddenFor(m => m.il36size)
+                                @Html.HiddenFor(m => m.il36UOM)
+                                <td><b>@Html.Raw(Model.il36name)</b></td>
+                                <td></td>
+                                <td></td>
+                                <td>@Html.TextBoxFor(m => Model.il36unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il36extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il36unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td>@Html.TextBoxFor(m => Model.il36extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table id="dtTable1Freight" class="display table table-bordered table-hover" style="max-width:100%;">
+                        <tbody>
+                            <tr>
+                                @Html.HiddenFor(m => m.il40linetype)
+                                @Html.HiddenFor(m => m.il40display)
+                                @Html.HiddenFor(m => m.il40name)
+                                @Html.HiddenFor(m => m.il40size)
+                                @Html.HiddenFor(m => m.il40UOM)
+                                <td style="width:50%;"><b>@Html.Raw(Model.il40name)</b></td>
+                                <td style="width:10%;">@Html.TextBoxFor(m => Model.il40unitCost, new { @class = "form-control" })</td>
+                                <td style="width:10%;">@Html.TextBoxFor(m => Model.il40extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                <td style="width:10%;">@Html.TextBoxFor(m => Model.il40unitSell, new { @class = "form-control" })%</td>
+                                <td style="width:10%;">@Html.TextBoxFor(m => Model.il40extSell, new { @class = "form-control" })</td>
+                                <td style="width:10%;"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <br />
+                    <div class="col-lg-12">
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.comment)
+                            @Html.TextAreaFor(m => m.comment, new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mr-2"> @ActionText </button>
+                    <a href="@Url.Action("InvoiceListing")" class="btn btn-light">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+
+@section Scripts {
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            $('#il1qty').change(function () { ProcessChangePrice(); })
+            $('#il2qty').change(function () { ProcessChangePrice(); })
+            $('#il3qty').change(function () { ProcessChangePrice(); })
+            $('#il4qty').change(function () { ProcessChangePrice(); })
+            $('#il5qty').change(function () { ProcessChangePrice(); })
+            $('#il6qty').change(function () { ProcessChangePrice(); })
+            $('#il7qty').change(function () { ProcessChangePrice(); })
+            $('#il8qty').change(function () { ProcessChangePrice(); })
+            $('#il9qty').change(function () { ProcessChangePrice(); })
+            $('#il10qty').change(function () { ProcessChangePrice(); })
+
+            function ProcessChangePrice() {
+                var result = ($('#il1qty').val() * $('#il1unitCost').val())
+                    + ($('#il2qty').val() * $('#il2unitCost').val())
+                    + ($('#il3qty').val() * $('#il3unitCost').val())
+                    + ($('#il4qty').val() * $('#il4unitCost').val())
+                    + ($('#il5qty').val() * $('#il5unitCost').val())
+                    + ($('#il6qty').val() * $('#il6unitCost').val())
+                    + ($('#il7qty').val() * $('#il7unitCost').val())
+                    + ($('#il8qty').val() * $('#il8unitCost').val())
+                    + ($('#il9qty').val() * $('#il9unitCost').val())
+                    + ($('#il10qty').val() * $('#il10unitCost').val())
+                    ;
+
+                $('#il11unitCost').val(result);
+
+                $('#il1extCost').val($('#il1qty').val() * $('#il1unitCost').val());
+                $('#il2extCost').val($('#il2qty').val() * $('#il2unitCost').val());
+                $('#il3extCost').val($('#il3qty').val() * $('#il3unitCost').val());
+                $('#il4extCost').val($('#il4qty').val() * $('#il4unitCost').val());
+                $('#il5extCost').val($('#il5qty').val() * $('#il5unitCost').val());
+                $('#il6extCost').val($('#il6qty').val() * $('#il6unitCost').val());
+                $('#il7extCost').val($('#il7qty').val() * $('#il7unitCost').val());
+                $('#il8extCost').val($('#il8qty').val() * $('#il8unitCost').val());
+                $('#il9extCost').val($('#il9qty').val() * $('#il9unitCost').val());
+                $('#il10extCost').val($('#il10qty').val() * $('#il10unitCost').val());
+
+
+                $('#il1extSell').val($('#il1qty').val() * $('#il1unitSell').val());
+                $('#il2extSell').val($('#il2qty').val() * $('#il2unitSell').val());
+                $('#il3extSell').val($('#il3qty').val() * $('#il3unitSell').val());
+                $('#il4extSell').val($('#il4qty').val() * $('#il4unitSell').val());
+                $('#il5extSell').val($('#il5qty').val() * $('#il5unitSell').val());
+                $('#il6extSell').val($('#il6qty').val() * $('#il6unitSell').val());
+                $('#il7extSell').val($('#il7qty').val() * $('#il7unitSell').val());
+                $('#il8extSell').val($('#il8qty').val() * $('#il8unitSell').val());
+                $('#il9extSell').val($('#il9qty').val() * $('#il9unitSell').val());
+                $('#il10extSell').val($('#il10qty').val() * $('#il10unitSell').val());
+
+            }
+
+            $('#il20qty').change(function () { ProcessChangePriceML(); })
+            $('#il21qty').change(function () { ProcessChangePriceML(); })
+            $('#il22qty').change(function () { ProcessChangePriceML(); })
+            $('#il23qty').change(function () { ProcessChangePriceML(); })
+            $('#il24qty').change(function () { ProcessChangePriceML(); })
+            $('#il25qty').change(function () { ProcessChangePriceML(); })
+            $('#il26qty').change(function () { ProcessChangePriceML(); })
+            $('#il27qty').change(function () { ProcessChangePriceML(); })
+            $('#il28qty').change(function () { ProcessChangePriceML(); })
+            $('#il29qty').change(function () { ProcessChangePriceML(); })
+            $('#il30qty').change(function () { ProcessChangePriceML(); })
+            $('#il31qty').change(function () { ProcessChangePriceML(); })
+            $('#il32qty').change(function () { ProcessChangePriceML(); })
+            $('#il33qty').change(function () { ProcessChangePriceML(); })
+            $('#il34qty').change(function () { ProcessChangePriceML(); })
+            $('#il35qty').change(function () { ProcessChangePriceML(); })
+
+            function ProcessChangePriceML() {
+                var result = ($('#il20qty').val() * $('#il20unitCost').val())
+                    + ($('#il21qty').val() * $('#il21unitCost').val())
+                    + ($('#il22qty').val() * $('#il22unitCost').val())
+                    + ($('#il23qty').val() * $('#il23unitCost').val())
+                    + ($('#il24qty').val() * $('#il24unitCost').val())
+                    + ($('#il25qty').val() * $('#il25unitCost').val())
+                    + ($('#il26qty').val() * $('#il26unitCost').val())
+                    + ($('#il27qty').val() * $('#il27unitCost').val())
+                    + ($('#il28qty').val() * $('#il28unitCost').val())
+                    + ($('#il29qty').val() * $('#il29unitCost').val())
+                    + ($('#il30qty').val() * $('#il30unitCost').val())
+                    + ($('#il31qty').val() * $('#il31unitCost').val())
+                    + ($('#il32qty').val() * $('#il32unitCost').val())
+                    + ($('#il33qty').val() * $('#il33unitCost').val())
+                    + ($('#il34qty').val() * $('#il34unitCost').val())
+                    + ($('#il35qty').val() * $('#il35unitCost').val())
+                    ;
+
+                $('#il36unitCost').val(result);
+
+                $('#il20extCost').val($('#il20qty').val() * $('#il20unitCost').val());
+                $('#il21extCost').val($('#il21qty').val() * $('#il21unitCost').val());
+                $('#il22extCost').val($('#il22qty').val() * $('#il22unitCost').val());
+                $('#il23extCost').val($('#il23qty').val() * $('#il23unitCost').val());
+                $('#il24extCost').val($('#il24qty').val() * $('#il24unitCost').val());
+                $('#il25extCost').val($('#il25qty').val() * $('#il25unitCost').val());
+                $('#il26extCost').val($('#il26qty').val() * $('#il26unitCost').val());
+                $('#il27extCost').val($('#il27qty').val() * $('#il27unitCost').val());
+                $('#il28extCost').val($('#il28qty').val() * $('#il28unitCost').val());
+                $('#il29extCost').val($('#il29qty').val() * $('#il29unitCost').val());
+                $('#il30extCost').val($('#il30qty').val() * $('#il30unitCost').val());
+                $('#il31extCost').val($('#il31qty').val() * $('#il31unitCost').val());
+                $('#il32extCost').val($('#il32qty').val() * $('#il32unitCost').val());
+                $('#il33extCost').val($('#il33qty').val() * $('#il33unitCost').val());
+                $('#il34extCost').val($('#il34qty').val() * $('#il34unitCost').val());
+                $('#il35extCost').val($('#il35qty').val() * $('#il35unitCost').val());
+
+                $('#il20extSell').val($('#il20qty').val() * $('#il20unitSell').val());
+                $('#il21extSell').val($('#il21qty').val() * $('#il21unitSell').val());
+                $('#il22extSell').val($('#il22qty').val() * $('#il22unitSell').val());
+                $('#il23extSell').val($('#il23qty').val() * $('#il23unitSell').val());
+                $('#il24extSell').val($('#il24qty').val() * $('#il24unitSell').val());
+                $('#il25extSell').val($('#il25qty').val() * $('#il25unitSell').val());
+                $('#il26extSell').val($('#il26qty').val() * $('#il26unitSell').val());
+                $('#il27extSell').val($('#il27qty').val() * $('#il27unitSell').val());
+                $('#il28extSell').val($('#il28qty').val() * $('#il28unitSell').val());
+                $('#il29extSell').val($('#il29qty').val() * $('#il29unitSell').val());
+                $('#il30extSell').val($('#il30qty').val() * $('#il30unitSell').val());
+                $('#il31extSell').val($('#il31qty').val() * $('#il31unitSell').val());
+                $('#il32extSell').val($('#il32qty').val() * $('#il32unitSell').val());
+                $('#il33extSell').val($('#il33qty').val() * $('#il33unitSell').val());
+                $('#il34extSell').val($('#il34qty').val() * $('#il34unitSell').val());
+                $('#il35extSell').val($('#il35qty').val() * $('#il35unitSell').val());
+            }
+
+
+        });
+    </script>
+}

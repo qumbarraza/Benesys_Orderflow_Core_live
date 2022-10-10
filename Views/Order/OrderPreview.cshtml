@@ -1,0 +1,271 @@
+﻿@model TBENesys_Orderflow_Core.ViewModels.OrderPreviewViewModel
+
+@{
+    ViewData["Title"] = @Model.PageTitle;
+}
+
+@section styles{
+    <link rel="stylesheet" type="text/css" href="~/multiselect/example-styles.css" />
+
+    <style>
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .col-sm-2 {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .col-sm-4 {
+            font-size: 15px;
+        }
+
+        .modal-dialog {
+            max-width: 900px;
+        }
+        .card-body {
+            font-size: 15px;
+        }
+
+            .card-body a {
+                font-size: 15px;
+            }
+
+            .card-body p {
+                font-size: 15px;
+            }
+
+        .form-group label {
+            font-size: 15px !important;
+        }
+    </style>
+}
+@section Breadcrumbs{
+    <h3 class="page-title">Order Check Out</h3>
+}
+<div class="col-lg-12">
+    <div class="card">
+        <div class="card-title">
+            @if (@ViewBag.ResultMessage != null && @ViewBag.ResultMessage.ToString().Contains("Error"))
+            {
+                <div class="alert alert-danger">@ViewBag.ResultMessage</div>
+            }
+            else if (@ViewBag.ResultMessage != null)
+            {
+                <div class="alert alert-success">@ViewBag.ResultMessage</div>
+            }
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    <button class="close" data-dismiss="alert"></button>
+                    @Html.ValidationSummary()
+                </div>
+            }
+            @if (Model.Response != null)
+            {
+                @Html.Partial("_MessagePartial", Model.Response)
+            }
+            <div class="clear"></div>
+        </div>
+        <div class="card-body">
+            @using (Html.BeginForm("OrderPreview", "Order", FormMethod.Post, new { @class = "col-lg-12" }))
+            {
+                <form class="forms-sample" style="font-size:15px;">
+                    <fieldset>
+                        <legend>Contact <a class="btn btn-danger btn-icon-text" href="@Url.Action("OrderCheckOut")" style="width: 105px; height: 27px; padding-top: 1px; margin: 0px;">Edit <i class="mdi mdi-file-check btn-icon-append"></i></a></legend>
+                        <div class="form-group row">
+                            <div class="col-sm-3">Requestor Name:</div>
+                            <div class="col-sm-4">@Model.UODs.RequestorName</div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-3">Requestor Email:</div>
+                            <div class="col-sm-4">@Model.UODs.RequestorEmail</div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-3">Requestor Phone:</div>
+                            <div class="col-sm-4">@Model.UODs.RequestorPhone</div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-3">Fringe:</div>
+                            <div class="col-sm-4">@Model.UODs.Fringe</div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-3">Charge Order To:</div>
+                            <div class="col-sm-4">@Model.UODs.ChargeOrderTo</div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-3">Approval Manager:</div>
+                            <div class="col-sm-4">@Model.UODs.ApprovalManagerName</div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Job Details <a class="btn btn-danger btn-icon-text" href="@Url.Action("Index")" style="width: 105px; height: 27px; padding-top: 1px; margin: 0px;">Edit <i class="mdi mdi-file-check btn-icon-append"></i></a></legend>
+                        <div class="form-group row">
+                            <div class="col-sm-3">Documents:</div>
+                            <div class="col-sm-4">
+                                <span><b>You have selected</b></span>
+                                <ol style="margin-bottom:0px;">
+                                    @if (Model.UODs.DLs != null && Model.UODs.DLs.Count > 0)
+                                    {
+                                        foreach (var item in Model.UODs.DLs)
+                                        {
+                                            <li style="font-weight:bold;">
+                                                @item.FileName
+                                            </li>
+                                        }
+                                    }
+                                </ol>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-3">Envelope or Self Mail:</div>
+                            <div class="col-sm-4">
+                                @if (Model.UODs.EnvelopeSelected != null)
+                                {
+                                    <span>@Model.UODs.EnvelopeSelected.MainContent</span>
+                                }
+                                else
+                                {
+                                    <span>None</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-3">Envelope Size:</div>
+                            @if (Model.UODs.EnvelopeSize!=null)
+                            {
+                                <div class="col-sm-4">@Model.UODs.EnvelopeSize</div>
+                            }
+                            else
+                            {
+                                <div class="col-sm-4">None</div>
+                            }
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-3">Mailing List:</div>
+                            <div class="col-sm-4">
+                                @if (Model.UODs.MLs != null && Model.UODs.MLs.Count > 0)
+                                {
+                                    <span><b>You have selected</b></span>
+                                    <ol style="margin-bottom:0px;">
+                                        @foreach (var item in Model.UODs.MLs)
+                                        {
+                                            <li style="font-weight:bold;">
+                                                @item.FileName
+                                            </li>
+                                        }
+                                    </ol>
+                                }
+                                else
+                                    {
+                                     <ol style="margin-bottom:0px;">
+                                         <li style="font-weight:normal;">
+                                             No Mail List
+                                         </li>
+                                     </ol>
+                                    }
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-3">Job Name:</div>
+                            <div class="col-sm-4">@Model.UODs.JobName</div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-3">Job Prints:</div>
+                            <div class="col-sm-4">@Model.UODs.JobPrints</div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-3">Print Quantity:</div>
+                            <div class="col-sm-4">@Model.UODs.Printquantity</div>
+                        </div>
+                        @if (Model.UODs.MLs != null && Model.UODs.MLs.Count > 0)
+                        {
+                            <div class="form-group row">
+                                <div class="col-sm-3">Mail drop by (mm/dd):</div>
+                                <div class="col-sm-4">
+                                    @Model.UODs.MailDropDate.ToString("MM/dd")
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group row">
+                                <div class="col-sm-3">Order needed by (mm/dd):</div>
+                                <div class="col-sm-4">
+                                    @Model.UODs.OrderNeededBy.ToString("MM/dd")
+                                </div>
+                            </div>
+                        }
+                        <div class="form-group row">
+                            <div class="col-sm-3">RUSH Job:</div>
+                            <div class="col-sm-4">@Model.UODs.RushJob</div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-3">Special Instructions:</div>
+                            <div class="col-sm-4">@Model.UODs.SpecialInstructions</div>
+                        </div>
+                    </fieldset>
+                    <button type="submit" class="btn btn-primary mr-2"> Submit Order </button> |
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                        Send this receipt to additional emails
+                    </button>
+                    <!-- Modal -->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Select Additional Emails</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        @Html.LabelFor(m => m.AdditionalEmail)<br />
+                                        <select id="dropDownList-example" name="SelectedEmails" asp-items="@Model.AllEmails" multiple class="form-control"></select>
+                                        <br />
+                                        <br />
+                                        <br />
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            }
+            <br />
+        </div>
+    </div>
+</div>
+<div class="clear"></div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+
+    <script src="~/js/jquery.maskedinput.min.js"></script>
+    <script src="~/multiselect/jquery.multi-select.js"></script>
+
+
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            $("#RequestorPhone").mask("999-999-9999");
+
+            var allValues = "@Model.AdditionalEmail";
+            if (allValues.length > 0) {
+                var selectedOptions = allValues.split(",");
+                for (var i in selectedOptions) {
+                    var optionVal = selectedOptions[i];
+                    $("#dropDownList-example").find("option[value=" + optionVal + "]").prop("selected", "selected");
+                }
+            }
+            $('#dropDownList-example').multiSelect();
+            });
+    </script>
+}
+

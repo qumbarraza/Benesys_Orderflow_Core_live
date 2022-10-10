@@ -1,0 +1,92 @@
+﻿@model TBENesys_Orderflow_Core.ViewModels.MyAccountViewModel
+
+@{
+    string ActionText = "";
+    if (Model.lngID.HasValue)
+    {
+        ViewBag.Title = "Update Account for " + Model.Name;
+        ActionText = "Update";
+    }
+}
+@section styles{
+    <link rel="stylesheet" type="text/css" href="~/multiselect/example-styles.css" />
+}
+
+@using (Html.BeginForm("MyAccount", "Admin", FormMethod.Post, new { @class = "col-lg-12" }))
+{
+    @Html.HiddenFor(d => d.lngID)
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">@ViewBag.Title</h4>
+                <p class="card-description">
+                </p>
+                <form class="forms-sample">
+                    <div class="form-group">
+                        @if (@ViewBag.ResultMessage != null && @ViewBag.ResultMessage.ToString().Contains("Error"))
+                        {
+                            <div class="alert alert-danger">@ViewBag.ResultMessage</div>
+                        }
+                        else if (@ViewBag.ResultMessage != null)
+                        {
+                            <div class="alert alert-success">@ViewBag.ResultMessage</div>
+                        }
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger">
+                                <button class="close" data-dismiss="alert"></button>
+                                @Html.ValidationSummary()
+                            </div>
+                        }
+                        @if (Model.Response != null)
+                        {
+                            @Html.Partial("_MessagePartial", Model.Response)
+                        }
+                        <div class="clear"></div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.UserID)
+                        @Html.TextBoxFor(m => m.UserID, new { @placeholder = "UserID", @class = "form-control", @readonly = "readonly" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Name)
+                        @Html.TextBoxFor(m => m.Name, new { @placeholder = "Full Name", @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Pwd)
+                        @Html.PasswordFor(m => m.Pwd, new { @placeholder = "Password", @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.NewPwd)
+                        @Html.PasswordFor(m => m.NewPwd, new { @placeholder = "New Password", @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.ConfirmPwd)
+                        @Html.PasswordFor(m => m.ConfirmPwd, new { @placeholder = "Confirm Password", @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Email)
+                        @Html.TextBoxFor(m => m.Email, new { @placeholder = "Email", @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.UserRole)
+                        @Html.TextBoxFor(m => m.UserRole, new { @class = "form-control", @readonly = "readonly" })
+                    </div>
+                    <button type="submit" class="btn btn-primary mr-2"> @ActionText </button>
+                    <a href="@Url.Action("AccountListing")" class="btn btn-light">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+
+@section Scripts{
+    <script src="~/multiselect/jquery.multi-select.js"></script>
+    <script>
+        $(document).ready(function () {
+            
+            });
+    </script>
+
+}

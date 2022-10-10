@@ -1,0 +1,83 @@
+﻿@model TBENesys_Orderflow_Core.ViewModels.EnvelopeHandlerViewModel
+
+@{
+    string ActionText = "";
+    if (Model.lngID.HasValue)
+    {
+        ViewBag.Title = "Update Envelope - " + Model.MainContent;
+        ActionText = "Update";
+    }
+    else
+    {
+        ViewBag.Title = "New Envelope";
+        ActionText = "Save";
+    }
+}
+
+
+
+@using (Html.BeginForm("EnvelopeHandler", "Admin", FormMethod.Post, new { @class = "col-lg-12" }))
+{
+    <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">@ViewBag.Title</h4>
+                <p class="card-description">
+                </p>
+                <form class="forms-sample">
+                    <div class="form-group">
+                        @if (@ViewBag.ResultMessage != null && @ViewBag.ResultMessage.ToString().Contains("Error"))
+                        {
+                            <div class="alert alert-danger">@ViewBag.ResultMessage</div>
+                        }
+                        else if (@ViewBag.ResultMessage != null)
+                        {
+                            <div class="alert alert-success">@ViewBag.ResultMessage</div>
+                        }
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger">
+                                <button class="close" data-dismiss="alert"></button>
+                                @Html.ValidationSummary()
+                            </div>
+                        }
+                        <div class="clear"></div>
+                    </div>
+                    @Html.HiddenFor(m => m.lngID)
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.MainContent)
+                        @Html.TextBoxFor(m => m.MainContent, new { @placeholder = "Cost Center", @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.SubContent2)
+                        @Html.TextBoxFor(m => m.SubContent2, new { @placeholder = "Group Name 1", @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.SubContent3)
+                        @Html.TextBoxFor(m => m.SubContent3, new { @placeholder = "Group Name 2", @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.SubContent4)
+                        @Html.TextBoxFor(m => m.SubContent4, new { @placeholder = "Group Name 3", @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.SubContent5)
+                        @Html.TextBoxFor(m => m.SubContent5, new { @placeholder = "Address", @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.SubContent6)
+                        @Html.TextBoxFor(m => m.SubContent6, new { @placeholder = "City, State Zip", @class = "form-control" })
+                    </div>
+                    <button type="submit" class="btn btn-primary mr-2"> @ActionText </button>
+                    <a href="@Url.Action("EnvelopesListing")" class="btn btn-light">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+
+@section Scripts {
+    <script type="text/javascript">
+    </script>
+}

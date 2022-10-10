@@ -1,0 +1,21 @@
+﻿@model TBENesys_Orderflow_Core.Models.ResponseMessage
+
+@if (Model != null)
+{
+    if (Model.IsSuccessful.HasValue && Model.IsSuccessful.Value)
+    {
+        <div class="alert alert-success" role="alert" style="font-size:13px;">
+            <i class="feather icon-check-square"></i> @Model.Message <strong>@Model.Details</strong>
+            @if (!String.IsNullOrEmpty(Model.AddAnotherLink))
+            {
+                <text>| <a class="btn btn-sm btn-primary" href="@Model.AddAnotherLink">Add Another</a> </text>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger" role="alert" style="font-size:13px;">
+            <i class="feather icon-x-circle"></i> @Model.Message @Model.Details
+        </div>
+    }
+}

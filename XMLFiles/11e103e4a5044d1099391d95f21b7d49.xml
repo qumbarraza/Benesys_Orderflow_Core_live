@@ -1,0 +1,138 @@
+<cXML timestamp="2022-6-16-22:53:36" payloadId="167ef82c-5d46-4d41-bbc5-0171aaaae7c0">
+  <Header>
+    <From>
+      <Credentials domain="DUNS">
+        <Identity>0300006415</Identity>
+      </Credentials>
+    </From>
+    <To>
+      <Credentials domain="Ad-hoc">
+        <Identity>Smart Source of GA</Identity>
+      </Credentials>
+    </To>
+    <Sender>
+      <Credentials domain="Ad-hoc">
+        <Identity>TBEN-8491-00139012</Identity>
+      </Credentials>
+    </Sender>
+  </Header>
+  <Request deploymentMode="production">
+    <OrderRequest>
+      <OrderRequestHeader orderDate="2022-6-16-22:53:36" orderID="TBEN-8491">
+        <BillTo>
+          <Address>
+            <PostalAddress name="default">
+              <DeliverTo>L300</DeliverTo>
+              <Street>P.O. BOX 430</Street>
+              <Street />
+              <City>WEST COVINA</City>
+              <State>CA</State>
+              <PostalCode>91793</PostalCode>
+              <Country isoCountryCode="US">United States</Country>
+              <Extrinsic name="costCenter">
+              </Extrinsic>
+            </PostalAddress>
+            <Name>
+            </Name>
+            <Email>
+            </Email>
+            <Phone>
+            </Phone>
+            <Extrinsic name="costCenter">L200</Extrinsic>
+            <Extrinsic />
+            <Extrinsic />
+          </Address>
+        </BillTo>
+        <Shipping>
+          <Description>UPS</Description>
+        </Shipping>
+        <Comments />
+        <Extrinsic name="BuyerID">0300006415</Extrinsic>
+      </OrderRequestHeader>
+      <ItemOut quantity="1" lineNumber="1">
+        <ItemId>
+          <SupplierPartID>PRINT</SupplierPartID>
+        </ItemId>
+        <ItemDetail>
+          <Description />
+          <Extrinsic name="costCenter">L200</Extrinsic>
+          <Extrinsic name="TBENSYSUnitCost">2.3703000000000003</Extrinsic>
+          <Extrinsic name="TBENSYSUnitSell">0</Extrinsic>
+          <Extrinsic name="TBENSYSPO_Code">1</Extrinsic>
+        </ItemDetail>
+        <ShipTo>
+          <Address>
+            <PostalAddress name="default">
+              <DeliverTo>L300</DeliverTo>
+              <Street>P.O. BOX 430</Street>
+              <City>WEST COVINA</City>
+              <State>CA</State>
+              <PostalCode>91793</PostalCode>
+              <Country isoCountryCode="US">United States</Country>
+              <Extrinsic name="costCenter" />
+            </PostalAddress>
+            <Name>Steve Boyett</Name>
+            <Email>sboyett@smartsourcellc.com</Email>
+            <Phone>7704496300</Phone>
+          </Address>
+        </ShipTo>
+      </ItemOut>
+      <ItemOut quantity="1" lineNumber="2">
+        <ItemId>
+          <SupplierPartID>MAILING</SupplierPartID>
+        </ItemId>
+        <ItemDetail>
+          <Description />
+          <Extrinsic name="costCenter">L200</Extrinsic>
+          <Extrinsic name="TBENSYSUnitCost">405.94399999999996</Extrinsic>
+          <Extrinsic name="TBENSYSUnitSell">0</Extrinsic>
+          <Extrinsic name="TBENSYSPO_Code">1</Extrinsic>
+        </ItemDetail>
+        <ShipTo>
+          <Address>
+            <PostalAddress name="default">
+              <DeliverTo>L300</DeliverTo>
+              <Street>P.O. BOX 430</Street>
+              <City>WEST COVINA</City>
+              <State>CA</State>
+              <PostalCode>91793</PostalCode>
+              <Country isoCountryCode="US">United States</Country>
+              <Extrinsic name="costCenter" />
+            </PostalAddress>
+            <Name>Steve Boyett</Name>
+            <Email>sboyett@smartsourcellc.com</Email>
+            <Phone>7704496300</Phone>
+          </Address>
+        </ShipTo>
+      </ItemOut>
+      <ItemOut quantity="11" lineNumber="3">
+        <ItemId>
+          <SupplierPartID>POSTAGE</SupplierPartID>
+        </ItemId>
+        <ItemDetail>
+          <Description />
+          <Extrinsic name="costCenter">L200</Extrinsic>
+          <Extrinsic name="TBENSYSUnitCost">0</Extrinsic>
+          <Extrinsic name="TBENSYSUnitSell">0</Extrinsic>
+          <Extrinsic name="TBENSYSPO_Code">1</Extrinsic>
+        </ItemDetail>
+        <ShipTo>
+          <Address>
+            <PostalAddress name="default">
+              <DeliverTo>L300</DeliverTo>
+              <Street>P.O. BOX 430</Street>
+              <City>WEST COVINA</City>
+              <State>CA</State>
+              <PostalCode>91793</PostalCode>
+              <Country isoCountryCode="US">United States</Country>
+              <Extrinsic name="costCenter" />
+            </PostalAddress>
+            <Name>Steve Boyett</Name>
+            <Email>sboyett@smartsourcellc.com</Email>
+            <Phone>7704496300</Phone>
+          </Address>
+        </ShipTo>
+      </ItemOut>
+    </OrderRequest>
+  </Request>
+</cXML>

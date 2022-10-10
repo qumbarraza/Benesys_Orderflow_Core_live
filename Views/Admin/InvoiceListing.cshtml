@@ -1,0 +1,2235 @@
+﻿@model TBENesys_Orderflow_Core.ViewModels.InvoiceListingViewModel
+
+@{
+    ViewData["Title"] = @Model.PageTitle;
+    string AllRoles = Model.UserRole;
+}
+
+@section styles{
+    <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/dataTables.jqueryui.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.0.1/css/buttons.dataTables.min.css" />
+
+    <style>
+
+        .modal-content {
+            background-color: #ffffff;
+        }
+
+        .modal-dialog {
+            max-width: 90%;
+        }
+
+        .form-control {
+        }
+
+        #dtTablePrinting thead th {
+            border-top: 0;
+            border-bottom-width: 1px;
+            font-family: "Open Sans", sans-serif;
+            font-weight: 600;
+            font-weight: initial;
+            background-color: #D8D8D8;
+            border-bottom: 1px solid;
+            padding: 10px;
+        }
+
+        .main-row {
+            background-color: #DFF0D8;
+        }
+
+        .alter-row {
+            background-color: #E8E8E8;
+        }
+
+        .main-row-mail {
+            background-color: #D9EDF7;
+        }
+
+        .form-control {
+            height: 1.875rem;
+            border: 2px solid #000;
+            padding: 0px 0px 0px 4px !important;
+        }
+
+        #dtTable thead th {
+            font-size: 11px !important;
+        }
+
+        #dtTable tbody td {
+            font-size: 11px !important;
+            white-space: normal;
+        }
+    </style>
+
+}
+@section Breadcrumbs{
+    <h3 class="page-title">@Model.PageTitle</h3>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href=@Url.Action("Index", "Order" )>Dashboard</a></li>
+        </ol>
+    </nav>
+}
+<div class="col-lg-12">
+    <div class="card">
+        <div class="card-title">
+            @if (@ViewBag.ResultMessage != null && @ViewBag.ResultMessage.ToString().Contains("Error"))
+            {
+                <div class="alert alert-danger">@ViewBag.ResultMessage</div>
+            }
+            else if (@ViewBag.ResultMessage != null)
+            {
+                <div class="alert alert-success">@ViewBag.ResultMessage</div>
+            }
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    <button class="close" data-dismiss="alert"></button>
+                    @Html.ValidationSummary()
+                </div>
+            }
+            @if (Model.Response != null)
+            {
+                @Html.Partial("_MessagePartial", Model.Response)
+            }
+            <div class="clear"></div>
+        </div>
+        <div class="card-body">
+            <table id="dtTable" class="display table table-bordered table-hover" style="width: 100%; ">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th><b>Order # <br />Order Date<br />Date Mailed</b></th>
+                        <th><b>Job Name</b></th>
+                        <th><b>Status</b></th>
+                        <th text-align:center;"><b>Vendor Invoice <br />Actions</b></th>
+                        <th><b>Invoice #</b><br />Invoice Date</th>
+                        @if (AllRoles.Contains("32"))
+                        {
+                            <th style="width: 276px;"><b>Client Invoice <br /> Actions</b></th>
+                            <th><b>Client <br />Invoice Date <br /> (Payment Date)</b></th>
+                            <th><b>Invoice<br />Recipient</b></th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Records.Count > 0)
+                    {
+
+
+                        foreach (var item in Model.Records)
+                        {
+                            <tr>
+                                <td style=" text-align:center;">
+                                    <a style="color: blue; font-size: 20px;" title="View" href="#" onclick="openModal(@item.OrderID)"><i class="mdi mdi-search-web"></i></a>
+                                </td>
+                                <td>
+                                    #: TBEN-@item.OrderID<br />
+                                    Order Date: @item.OrderDate<br />
+                                    Date Mailed: @item.DateMailed
+                                </td>
+                                <td>@item.JobName</td>
+                                <td style="word-wrap: break-word">@item.Status</td>
+                                <td>
+                                    @if (item.InvoiceID.HasValue)
+                                    {
+                                        if (AllRoles.Contains("1") || AllRoles.Contains("32"))
+                                        {
+                                            <a style="font-size:11px;" title="Edit Invoice" href="#" onclick="openInvoiceModal(@item.OrderID, 'edit')" class="btn btn-danger btn-sm">Edit Invoice</a><br />
+                                        }
+                                        if (AllRoles.Contains("23") && item.Status == "Pending by vendor")
+                                        {
+                                            <a style="font-size:11px;" title="Edit Invoice" href="#" onclick="openInvoiceModal(@item.OrderID, 'edit')" class="btn btn-danger btn-sm">Edit Invoice</a><br />
+                                        }
+                                        if (item.Status == "Submitted by vendor")
+                                        {
+                                            <a style="font-size: 11px; margin-top: 3px;" title="View PDF" href="@Url.Action("CreateInvoicePDF", "Admin", new { OrderId = item.OrderID })" target="_blank" class="btn btn-dark btn-sm">View PDF</a>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <a style="font-size: 11px;" title="Create Invoice" href="#" onclick="openInvoiceModal(@item.OrderID, 'create')" class="btn btn-success btn-sm">Create Invoice</a><br />
+                                    }
+                                </td>
+                                <td>
+                                    @item.InvoiceID<br />
+                                    @item.InvoiceDate
+                                </td>
+                                @if (AllRoles.Contains("32"))
+                                {
+                                    <td>
+                                        @if (item.InvoiceID.HasValue)
+                                        {
+                                            <a style="font-size: 11px;" title="Upload Client Invoice" href="@Url.Action("UploadClientInvoice", "Admin", new { OrderId = item.OrderID })" target="_blank" class="btn btn-primary btn-sm">Upload Client Invoice</a>
+                                        }
+                                        @if (!String.IsNullOrEmpty(item.ClientInvoiceName))
+                                        {
+                                            <br />
+                                            <a style="font-size: 11px; margin-top: 3px;" title="View PDF" href="@item.ClientInvoiceName" target="_blank" class="btn btn-dark btn-sm">View PDF</a>
+                                            <br />
+                                            <a style="font-size: 11px; margin-top: 3px;" title="Send Client Invoice" href="@Url.Action("SendClientInvoice", "Admin", new { OrderId = item.OrderID })" class="btn btn-success btn-sm">Send Client Invoice</a>
+                                            <br />
+                                            <a style="font-size: 11px; margin-top: 3px;" title="Receive Client Payment" href="@Url.Action("ReceiveClientPayment", "Admin", new { OrderId = item.OrderID })" class="btn btn-warning btn-sm">Receive Client Payment</a>
+                                        }
+                                    </td>
+                                    <td>
+                                        @item.ClientInvoiceDate<br>
+                                        (@item.ClientPaymentDate)
+                                    </td>
+                                    <td>
+                                        @item.InvoiceRecipient
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8">No orders found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <!-- Modal -->
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Order Receipt</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group" id="ModelBody">
+                                @*@Html.Raw(@Model.OrderReceiptDetails)*@
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="myInvoiceModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 class="modal-title" id="exampleModalLabel">Billing Form</h2> &nbsp;&nbsp;
+                            <button style="margin-top:10px;" id="ModalSaveInvoice" type="button" class="btn btn-primary" data-dismiss="modal" onclick="submitInvoice();">Save</button>
+                            &nbsp; &nbsp;<button style="margin-top:10px;" type="button" class="btn btn-success" data-dismiss="modal" onclick="submitFinalInvoice();">Submit</button>&nbsp;&nbsp;
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group" id="ModelBody">
+                                <div class="col-lg-12">
+                                    @Html.HiddenFor(m => m.orderID)
+                                    <form class="forms-sample">
+                                        @Html.HiddenFor(m => m.lngID)
+                                        @Html.HiddenFor(m => m.ilStatusType)
+                                        @Html.HiddenFor(m => m.ilOrderID)
+                                        @Html.HiddenFor(m => m.ilInvoiceID)
+                                        <table style="width: 100%; font-size: 0.875rem;">
+                                            <tbody>
+                                                <tr>
+                                                    <td style="width:33%;"><b>Client Order No: </b> TBEN-<span id="DTClientOrderNo"></span></td>
+                                                    <td style="width:33%;"><b>Client Charge To: </b> <span id="DTClientChargeTo"></span></td>
+                                                    <td style="width:34%;"><b>Client Job Name: </b> <span id="DTClientJobName"></span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="width:33%;"><b>Vendor Invoice No: </b> <span id="DTVendorInvoiceNo"></span></td>
+                                                    <td style="width:67%;" colspan="2"><b>Invoice Date: </b> <span id="DTVendorInvoiceDate"></span></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <br />
+                                        <table id="dtTablePrinting" class="display table table-bordered table-hover" style="max-width:100%;">
+                                            <thead>
+                                                <tr>
+
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <th style="width:20%;"><b>TBENeSys Printing Services</b></th>
+                                                        <th style="width:10%;"><b>Size</b></th>
+                                                        <th style="width:10%;"><b>Qty</b></th>
+                                                        <th style="width:10%;"><b>UOM</b></th>
+                                                        <th style="width:10%;"><b>Unit Cost</b></th>
+                                                        <th style="width:10%;"><b>Ext Cost</b></th>
+                                                        <th style="width:10%;"><b>Unit Sell</b></th>
+                                                        <th style="width:10%;"><b>Ext Sell</b></th>
+                                                        <th style="width:10%;"><b>Min Ext Sell</b></th>
+                                                    }
+                                                    else
+                                                    {
+                                                        <th style="width:35%;"><b>TBENeSys Printing Services</b></th>
+                                                        <th style="width:10%;"><b>Size</b></th>
+                                                        <th style="width:15%;"><b>Qty</b></th>
+                                                        <th style="width:10%;"><b>UOM</b></th>
+                                                        <th style="width:15%;"><b>Unit Cost</b></th>
+                                                        <th style="width:15%;"><b>Ext Cost</b></th>
+                                                    }
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="main-row">
+                                                    @Html.HiddenFor(m => m.il1linetype)
+                                                    @Html.HiddenFor(m => m.il1display)
+                                                    <td><div id="il1name"></div></td>
+                                                    <td><div id="il1size"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il1qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il1UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il1unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il1extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il1unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il1extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il1minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="alter-row">
+                                                    @Html.HiddenFor(m => m.il2linetype)
+                                                    @Html.HiddenFor(m => m.il2display)
+                                                    <td><div id="il2name"></div></td>
+                                                    <td><div id="il2size"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il2qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il2UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il2unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il2extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il2unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il2extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il2minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="main-row">
+                                                    @Html.HiddenFor(m => m.il3linetype)
+                                                    @Html.HiddenFor(m => m.il3display)
+                                                    <td><div id="il3name"></div></td>
+                                                    <td><div id="il3size"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il3qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il3UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il3unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il3extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il3unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il3extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il3minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="alter-row">
+                                                    @Html.HiddenFor(m => m.il4linetype)
+                                                    @Html.HiddenFor(m => m.il4display)
+                                                    <td><div id="il4name"></div></td>
+                                                    <td><div id="il4size"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il4qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il4UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il4unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il4extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il4unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il4extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il4minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="main-row">
+                                                    @Html.HiddenFor(m => m.il5linetype)
+                                                    @Html.HiddenFor(m => m.il5display)
+                                                    <td><div id="il5name"></div></td>
+                                                    <td><div id="il5size"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il5qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il5UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il5unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il5extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il5unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il5extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il5minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="alter-row">
+                                                    @Html.HiddenFor(m => m.il6linetype)
+                                                    @Html.HiddenFor(m => m.il6display)
+                                                    <td><div id="il6name"></div></td>
+                                                    <td><div id="il6size"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il6qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il6UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il6unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il6extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il6unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il6extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il6minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="main-row">
+                                                    @Html.HiddenFor(m => m.il7linetype)
+                                                    @Html.HiddenFor(m => m.il7display)
+                                                    <td><div id="il7name"></div></td>
+                                                    <td><div id="il7size"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il7qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il7UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il7unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il7extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il7unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il7extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il7minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="alter-row">
+                                                    @Html.HiddenFor(m => m.il8linetype)
+                                                    @Html.HiddenFor(m => m.il8display)
+                                                    <td><div id="il8name"></div></td>
+                                                    <td><div id="il8size"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il8qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il8UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il8unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il8extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il8unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il8extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il8minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="main-row">
+                                                    @Html.HiddenFor(m => m.il9linetype)
+                                                    @Html.HiddenFor(m => m.il9display)
+                                                    <td><div id="il9name"></div></td>
+                                                    <td><div id="il9size"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il9qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il9UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il9unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il9extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il9unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il9extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il9minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="alter-row">
+                                                    @Html.HiddenFor(m => m.il10linetype)
+                                                    @Html.HiddenFor(m => m.il10display)
+                                                    <td>@Html.TextBoxFor(m => Model.il10name, new { @placeholder = "Additional Charge", @class = "form-control" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il10size, new { @class = "form-control" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il10qty, new { @class = "form-control" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il10UOM, new { @placeholder = "Additional Charge", @class = "form-control" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il10unitCost, new { @class = "form-control" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il10extCost, new { @class = "form-control" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il10unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il10extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il10minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="main-row">
+                                                    @Html.HiddenFor(m => m.il11linetype)
+                                                    @Html.HiddenFor(m => m.il11display)
+                                                    <td><div id="il11name" style="font-weight: bold;"></div></td>
+                                                    <td><div id="il11size"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il11qty, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td><div id="il11UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il11unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il11extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il11unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il11extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                        <td><div id="il11minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <table id="dtTableMailing" class="display table table-bordered table-hover" style="max-width:100%;">
+                                            <thead>
+                                                <tr class="main-row-mail">
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <th style="width:30.5%;"><b>TBENeSys Mailing Services</b></th>
+                                                        <th style="width:10%;"><b>Qty</b></th>
+                                                        <th style="width:10%;"><b>UOM</b></th>
+                                                        <th style="width:10%;"><b>Unit Cost</b></th>
+                                                        <th style="width:10%;"><b>Ext Cost</b></th>
+                                                        <th style="width:10%;"><b>Unit Sell</b></th>
+                                                        <th style="width:10%;"><b>Ext Sell</b></th>
+                                                        <th style="width:10%;"><b>Min Ext Sell</b></th>
+                                                    }
+                                                    else
+                                                    {
+                                                        <th style="width:45%;"><b>TBENeSys Mailing Services</b></th>
+                                                        <th style="width:15%;"><b>Qty</b></th>
+                                                        <th style="width:15%;"><b>UOM</b></th>
+                                                        <th style="width:15%;"><b>Unit Cost</b></th>
+                                                        <th style="width:15%;"><b>Ext Cost</b></th>
+                                                    }
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="alter-row">
+                                                    @Html.HiddenFor(m => m.il20linetype)
+                                                    @Html.HiddenFor(m => m.il20display)
+                                                    <td><div id="il20name"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il20qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il20UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il20unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il20extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il20unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il20extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il20minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="main-row-mail">
+                                                    @Html.HiddenFor(m => m.il21linetype)
+                                                    @Html.HiddenFor(m => m.il21display)
+                                                    <td><div id="il21name"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il21qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il21UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il21unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il21extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il21unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il21extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il21minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="alter-row">
+                                                    @Html.HiddenFor(m => m.il22linetype)
+                                                    @Html.HiddenFor(m => m.il22display)
+                                                    <td><div id="il22name"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il22qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il22UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il22unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il22extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il22unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il22extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il22minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="main-row-mail">
+                                                    @Html.HiddenFor(m => m.il23linetype)
+                                                    @Html.HiddenFor(m => m.il23display)
+                                                    <td><div id="il23name"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il23qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il23UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il23unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il23extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il23unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il23extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il23minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="alter-row">
+                                                    @Html.HiddenFor(m => m.il24linetype)
+                                                    @Html.HiddenFor(m => m.il24display)
+                                                    <td><div id="il24name"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il24qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il24UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il24unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il24extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il24unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il24extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il24minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="main-row-mail">
+                                                    @Html.HiddenFor(m => m.il25linetype)
+                                                    @Html.HiddenFor(m => m.il25display)
+                                                    <td><div id="il25name"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il25qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il25UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il25unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il25extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il25unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il25extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il25minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="alter-row">
+                                                    @Html.HiddenFor(m => m.il26linetype)
+                                                    @Html.HiddenFor(m => m.il26display)
+                                                    <td><div id="il26name"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il26qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il26UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il26unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il26extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il26unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il26extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il26minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="main-row-mail">
+                                                    @Html.HiddenFor(m => m.il27linetype)
+                                                    @Html.HiddenFor(m => m.il27display)
+                                                    <td><div id="il27name"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il27qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il27UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il27unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il27extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il27unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il27extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il27minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="alter-row">
+                                                    @Html.HiddenFor(m => m.il28linetype)
+                                                    @Html.HiddenFor(m => m.il28display)
+                                                    <td><div id="il28name"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il28qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il28UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il28unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il28extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il28unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il28extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il28minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="main-row-mail">
+                                                    @Html.HiddenFor(m => m.il29linetype)
+                                                    @Html.HiddenFor(m => m.il29display)
+                                                    <td><div id="il29name"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il29qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il29UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il29unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il29extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il29unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il29extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il29minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="alter-row">
+                                                    @Html.HiddenFor(m => m.il30linetype)
+                                                    @Html.HiddenFor(m => m.il30display)
+                                                    <td><div id="il30name"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il30qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il30UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il30unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il30extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il30unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il30extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il30minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="main-row-mail">
+                                                    @Html.HiddenFor(m => m.il31linetype)
+                                                    @Html.HiddenFor(m => m.il31display)
+                                                    <td><div id="il31name"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il31qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il31UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il31unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il31extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il31unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il31extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il31minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="alter-row">
+                                                    @Html.HiddenFor(m => m.il32linetype)
+                                                    @Html.HiddenFor(m => m.il32display)
+                                                    <td><div id="il32name"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il32qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il32UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il32unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il32extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il32unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il32extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il32minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="alter-row">
+                                                    @Html.HiddenFor(m => m.il33linetype)
+                                                    @Html.HiddenFor(m => m.il33display)
+                                                    <td><div id="il33name"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il33qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il33UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il33unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il33extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il33unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il33extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il33minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="main-row-mail">
+                                                    @Html.HiddenFor(m => m.il34linetype)
+                                                    @Html.HiddenFor(m => m.il34display)
+                                                    <td><div id="il34name"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il34qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il34UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il34unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il34extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il34unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il34extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il34minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="alter-row">
+                                                    @Html.HiddenFor(m => m.il35linetype)
+                                                    @Html.HiddenFor(m => m.il35display)
+                                                    <td>@Html.TextBoxFor(m => Model.il35name, new { @class = "form-control" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il35qty, new { @class = "form-control" })</td>
+                                                    <td><div id="il35UOM"></div></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il35unitCost, new { @class = "form-control" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il35extCost, new { @class = "form-control" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il35unitSell, new { @class = "form-control" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il35extSell, new { @class = "form-control" })</td>
+                                                        <td><div id="il35minExtSell"></div></td>
+                                                    }
+                                                </tr>
+                                                <tr class="main-row-mail">
+                                                    @Html.HiddenFor(m => m.il36linetype)
+                                                    @Html.HiddenFor(m => m.il36display)
+                                                    <td><div style="font-weight: bold;" id="il36name"></div></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td>@Html.TextBoxFor(m => Model.il36unitCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td>@Html.TextBoxFor(m => Model.il36extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    @if (AllRoles.Contains("32"))
+                                                    {
+                                                        <td>@Html.TextBoxFor(m => Model.il36unitSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                        <td>@Html.TextBoxFor(m => Model.il36extSell, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                        <td></td>
+                                                    }
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <table id="dtTable1Freight" class="display table table-bordered table-hover" style="max-width:100%;">
+                                            <tbody>
+                                                <tr class="main-row-mail">
+                                                    @Html.HiddenFor(m => m.il40linetype)
+                                                    @Html.HiddenFor(m => m.il40display)
+                                                    <td style="width:50%;"><div id="il40name" style="font-weight: bold;"></div></td>
+                                                    <td style="width:10%;">@Html.TextBoxFor(m => Model.il40unitCost, new { @class = "form-control" })</td>
+                                                    <td style="width:10%;">@Html.TextBoxFor(m => Model.il40extCost, new { @class = "form-control", @readonly = "readonly" })</td>
+                                                    <td style="width:10%;display:inline-flex;">@Html.TextBoxFor(m => Model.il40unitSell, new { @class = "form-control", @style = "width:50px;" })<span style="padding-top:8px;">%</span></td>
+                                                    <td style="width:10%;">@Html.TextBoxFor(m => Model.il40extSell, new { @class = "form-control" })</td>
+                                                    <td style="width:10%;"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <br />
+                                        <div class="col-lg-12">
+                                            <div class="form-group">
+                                                @Html.Label("Comments")
+                                                @Html.TextAreaFor(m => m.comment, new { @class = "form-control", @style = "height:100px;" })
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="clear"></div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/dataTables.jqueryui.min.js"></script>
+
+    <script src="https://cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.html5.min.js"></script>
+
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+
+            $('#dtTable').DataTable({
+                "bSortClasses": false,
+                'paging': true,
+                'lengthChange': true,
+                "lengthMenu": [[50, 75, 100, -1], [50, 75, 100, "Show All"]],
+                'searching': true,
+                'ordering': false,
+                'info': true,
+                'autoWidth': true,
+                columnDefs: [
+                    { orderable: false, targets: -1 }
+                ],
+                "order": [[0, "desc"]],
+                dom: 'Blfrtip',
+                buttons: [
+                    'excel', 'csv'
+                ]
+            })
+
+            $('#il1qty').change(function () { ProcessChangePrice(); })
+            $('#il2qty').change(function () { ProcessChangePrice(); })
+            $('#il3qty').change(function () { ProcessChangePrice(); })
+            $('#il4qty').change(function () { ProcessChangePrice(); })
+            $('#il5qty').change(function () { ProcessChangePrice(); })
+            $('#il6qty').change(function () { ProcessChangePrice(); })
+            $('#il7qty').change(function () { ProcessChangePrice(); })
+            $('#il8qty').change(function () { ProcessChangePrice(); })
+            $('#il9qty').change(function () { ProcessChangePrice(); })
+            $('#il10qty').change(function () { ProcessChangePrice(); })
+
+            function ProcessChangePrice() {
+                var result = ($('#il1qty').val() * $('#il1unitCost').val())
+                    + ($('#il2qty').val() * $('#il2unitCost').val())
+                    + ($('#il3qty').val() * $('#il3unitCost').val())
+                    + ($('#il4qty').val() * $('#il4unitCost').val())
+                    + ($('#il5qty').val() * $('#il5unitCost').val())
+                    + ($('#il6qty').val() * $('#il6unitCost').val())
+                    + ($('#il7qty').val() * $('#il7unitCost').val())
+                    + ($('#il8qty').val() * $('#il8unitCost').val())
+                    + ($('#il9qty').val() * $('#il9unitCost').val())
+                    + ($('#il10qty').val() * $('#il10unitCost').val())
+                    ;
+
+                $('#il11extCost').val(result);
+
+
+
+                $('#il1extCost').val($('#il1qty').val() * $('#il1unitCost').val());
+                $('#il2extCost').val($('#il2qty').val() * $('#il2unitCost').val());
+                $('#il3extCost').val($('#il3qty').val() * $('#il3unitCost').val());
+                $('#il4extCost').val($('#il4qty').val() * $('#il4unitCost').val());
+                $('#il5extCost').val($('#il5qty').val() * $('#il5unitCost').val());
+                $('#il6extCost').val($('#il6qty').val() * $('#il6unitCost').val());
+                $('#il7extCost').val($('#il7qty').val() * $('#il7unitCost').val());
+                $('#il8extCost').val($('#il8qty').val() * $('#il8unitCost').val());
+                $('#il9extCost').val($('#il9qty').val() * $('#il9unitCost').val());
+                $('#il10extCost').val($('#il10qty').val() * $('#il10unitCost').val());
+
+
+                $('#il1extSell').val($('#il1qty').val() * $('#il1unitSell').val());
+                $('#il2extSell').val($('#il2qty').val() * $('#il2unitSell').val());
+                $('#il3extSell').val($('#il3qty').val() * $('#il3unitSell').val());
+                $('#il4extSell').val($('#il4qty').val() * $('#il4unitSell').val());
+                $('#il5extSell').val($('#il5qty').val() * $('#il5unitSell').val());
+                $('#il6extSell').val($('#il6qty').val() * $('#il6unitSell').val());
+                $('#il7extSell').val($('#il7qty').val() * $('#il7unitSell').val());
+                $('#il8extSell').val($('#il8qty').val() * $('#il8unitSell').val());
+                $('#il9extSell').val($('#il9qty').val() * $('#il9unitSell').val());
+                $('#il10extSell').val($('#il10qty').val() * $('#il10unitSell').val());
+
+                }
+
+            $('#il1unitCost').change(function () { ProcessChangeSumUnitCost(); })
+            $('#il2unitCost').change(function () { ProcessChangeSumUnitCost(); })
+            $('#il3unitCost').change(function () { ProcessChangeSumUnitCost(); })
+            $('#il4unitCost').change(function () { ProcessChangeSumUnitCost(); })
+            $('#il5unitCost').change(function () { ProcessChangeSumUnitCost(); })
+            $('#il6unitCost').change(function () { ProcessChangeSumUnitCost(); })
+            $('#il7unitCost').change(function () { ProcessChangeSumUnitCost(); })
+            $('#il8unitCost').change(function () { ProcessChangeSumUnitCost(); })
+            $('#il9unitCost').change(function () { ProcessChangeSumUnitCost(); })
+            $('#il10unitCost').change(function () { ProcessChangeSumUnitCost(); })
+
+
+            function ProcessChangeSumUnitCost() {
+                var result =
+                    +($('#il1unitCost').val()) + (+$('#il2unitCost').val()) + (+$('#il3unitCost').val())
+                    + (+$('#il4unitCost').val()) + (+$('#il5unitCost').val()) + (+$('#il6unitCost').val())
+                    + (+$('#il7unitCost').val()) + (+$('#il8unitCost').val()) + (+$('#il9unitCost').val())
+                    + (+$('#il10unitCost').val())
+
+                $('#il11unitCost').val(result)
+            }
+
+            $('#il20qty').change(function () { ProcessChangePriceML(); })
+            $('#il21qty').change(function () { ProcessChangePriceML(); })
+            $('#il22qty').change(function () { ProcessChangePriceML(); })
+            $('#il23qty').change(function () { ProcessChangePriceML(); })
+            $('#il24qty').change(function () { ProcessChangePriceML(); })
+            $('#il25qty').change(function () { ProcessChangePriceML(); })
+            $('#il26qty').change(function () { ProcessChangePriceML(); })
+            $('#il27qty').change(function () { ProcessChangePriceML(); })
+            $('#il28qty').change(function () { ProcessChangePriceML(); })
+            $('#il29qty').change(function () { ProcessChangePriceML(); })
+            $('#il30qty').change(function () { ProcessChangePriceML(); })
+            $('#il31qty').change(function () { ProcessChangePriceML(); })
+            $('#il32qty').change(function () { ProcessChangePriceML(); })
+            $('#il33qty').change(function () { ProcessChangePriceML(); })
+            $('#il34qty').change(function () { ProcessChangePriceML(); })
+            $('#il35qty').change(function () { ProcessChangePriceML(); })
+
+            function ProcessChangePriceML() {
+                var result = ($('#il20qty').val() * $('#il20unitCost').val())
+                    + ($('#il21qty').val() * $('#il21unitCost').val())
+                    + ($('#il22qty').val() * $('#il22unitCost').val())
+                    + ($('#il23qty').val() * $('#il23unitCost').val())
+                    + ($('#il24qty').val() * $('#il24unitCost').val())
+                    + ($('#il25qty').val() * $('#il25unitCost').val())
+                    + ($('#il26qty').val() * $('#il26unitCost').val())
+                    + ($('#il27qty').val() * $('#il27unitCost').val())
+                    + ($('#il28qty').val() * $('#il28unitCost').val())
+                    + ($('#il29qty').val() * $('#il29unitCost').val())
+                    + ($('#il30qty').val() * $('#il30unitCost').val())
+                    + ($('#il31qty').val() * $('#il31unitCost').val())
+                    + ($('#il32qty').val() * $('#il32unitCost').val())
+                    + ($('#il33qty').val() * $('#il33unitCost').val())
+                    + ($('#il34qty').val() * $('#il34unitCost').val())
+                    + ($('#il35qty').val() * $('#il35unitCost').val())
+                    ;
+
+                $('#il36unitCost').val(result);
+
+                $('#il20extCost').val($('#il20qty').val() * $('#il20unitCost').val());
+                $('#il21extCost').val($('#il21qty').val() * $('#il21unitCost').val());
+                $('#il22extCost').val($('#il22qty').val() * $('#il22unitCost').val());
+                $('#il23extCost').val($('#il23qty').val() * $('#il23unitCost').val());
+                $('#il24extCost').val($('#il24qty').val() * $('#il24unitCost').val());
+                $('#il25extCost').val($('#il25qty').val() * $('#il25unitCost').val());
+                $('#il26extCost').val($('#il26qty').val() * $('#il26unitCost').val());
+                $('#il27extCost').val($('#il27qty').val() * $('#il27unitCost').val());
+                $('#il28extCost').val($('#il28qty').val() * $('#il28unitCost').val());
+                $('#il29extCost').val($('#il29qty').val() * $('#il29unitCost').val());
+                $('#il30extCost').val($('#il30qty').val() * $('#il30unitCost').val());
+                $('#il31extCost').val($('#il31qty').val() * $('#il31unitCost').val());
+                $('#il32extCost').val($('#il32qty').val() * $('#il32unitCost').val());
+                $('#il33extCost').val($('#il33qty').val() * $('#il33unitCost').val());
+                $('#il34extCost').val($('#il34qty').val() * $('#il34unitCost').val());
+                $('#il35extCost').val($('#il35qty').val() * $('#il35unitCost').val());
+
+                $('#il20extSell').val($('#il20qty').val() * $('#il20unitSell').val());
+                $('#il21extSell').val($('#il21qty').val() * $('#il21unitSell').val());
+                $('#il22extSell').val($('#il22qty').val() * $('#il22unitSell').val());
+                $('#il23extSell').val($('#il23qty').val() * $('#il23unitSell').val());
+                $('#il24extSell').val($('#il24qty').val() * $('#il24unitSell').val());
+                $('#il25extSell').val($('#il25qty').val() * $('#il25unitSell').val());
+                $('#il26extSell').val($('#il26qty').val() * $('#il26unitSell').val());
+                $('#il27extSell').val($('#il27qty').val() * $('#il27unitSell').val());
+                $('#il28extSell').val($('#il28qty').val() * $('#il28unitSell').val());
+                $('#il29extSell').val($('#il29qty').val() * $('#il29unitSell').val());
+                $('#il30extSell').val($('#il30qty').val() * $('#il30unitSell').val());
+                $('#il31extSell').val($('#il31qty').val() * $('#il31unitSell').val());
+                $('#il32extSell').val($('#il32qty').val() * $('#il32unitSell').val());
+                $('#il33extSell').val($('#il33qty').val() * $('#il33unitSell').val());
+                $('#il34extSell').val($('#il34qty').val() * $('#il34unitSell').val());
+                $('#il35extSell').val($('#il35qty').val() * $('#il35unitSell').val());
+            }
+
+            $('#il20unitSell').change(function () { ProcessChangePriceMLUnitSell(); })
+            $('#il21unitSell').change(function () { ProcessChangePriceMLUnitSell(); })
+            $('#il22unitSell').change(function () { ProcessChangePriceMLUnitSell(); })
+            $('#il23unitSell').change(function () { ProcessChangePriceMLUnitSell(); })
+            $('#il24unitSell').change(function () { ProcessChangePriceMLUnitSell(); })
+            $('#il25unitSell').change(function () { ProcessChangePriceMLUnitSell(); })
+            $('#il26unitSell').change(function () { ProcessChangePriceMLUnitSell(); })
+            $('#il27unitSell').change(function () { ProcessChangePriceMLUnitSell(); })
+            $('#il28unitSell').change(function () { ProcessChangePriceMLUnitSell(); })
+            $('#il29unitSell').change(function () { ProcessChangePriceMLUnitSell(); })
+            $('#il30unitSell').change(function () { ProcessChangePriceMLUnitSell(); })
+            $('#il31unitSell').change(function () { ProcessChangePriceMLUnitSell(); })
+            $('#il32unitSell').change(function () { ProcessChangePriceMLUnitSell(); })
+            $('#il33unitSell').change(function () { ProcessChangePriceMLUnitSell(); })
+            $('#il34unitSell').change(function () { ProcessChangePriceMLUnitSell(); })
+            $('#il35unitSell').change(function () { ProcessChangePriceMLUnitSell(); })
+
+
+            function ProcessChangePriceMLUnitSell() {
+                var result =
+                    +($('#il20unitSell').val()) + (+$('#il21unitSell').val()) + (+$('#il22unitSell').val())
+                    + (+$('#il23unitSell').val()) + (+$('#il24unitSell').val()) + (+$('#il25unitSell').val())
+                    + (+$('#il26unitSell').val()) + (+$('#il27unitSell').val()) + (+$('#il28unitSell').val())
+                    + (+$('#il29unitSell').val()) + (+$('#il30unitSell').val()) + (+$('#il31unitSell').val())
+                    + (+$('#il32unitSell').val()) + (+$('#il33unitSell').val()) + (+$('#il34unitSell').val())
+                    + (+$('#il35unitSell').val())
+
+                $('#il36unitSell').val(result)
+            }
+
+
+
+            $('#il20extCost').change(function () { ProcessChangePriceMLextCost(); })
+            $('#il21extCost').change(function () { ProcessChangePriceMLextCost(); })
+            $('#il22extCost').change(function () { ProcessChangePriceMLextCost(); })
+            $('#il23extCost').change(function () { ProcessChangePriceMLextCost(); })
+            $('#il24extCost').change(function () { ProcessChangePriceMLextCost(); })
+            $('#il25extCost').change(function () { ProcessChangePriceMLextCost(); })
+            $('#il26extCost').change(function () { ProcessChangePriceMLextCost(); })
+            $('#il27extCost').change(function () { ProcessChangePriceMLextCost(); })
+            $('#il28extCost').change(function () { ProcessChangePriceMLextCost(); })
+            $('#il29extCost').change(function () { ProcessChangePriceMLextCost(); })
+            $('#il30extCost').change(function () { ProcessChangePriceMLextCost(); })
+            $('#il31extCost').change(function () { ProcessChangePriceMLextCost(); })
+            $('#il32extCost').change(function () { ProcessChangePriceMLextCost(); })
+            $('#il33extCost').change(function () { ProcessChangePriceMLextCost(); })
+            $('#il34extCost').change(function () { ProcessChangePriceMLextCost(); })
+            $('#il35extCost').change(function () { ProcessChangePriceMLextCost(); })
+
+
+            function ProcessChangePriceMLextCost() {
+                var result =
+                    +($('#il20extCost').val()) + (+$('#il21extCost').val()) + (+$('#il22extCost').val())
+                    + (+$('#il23extCost').val()) + (+$('#il24extCost').val()) + (+$('#il25extCost').val())
+                    + (+$('#il26extCost').val()) + (+$('#il27extCost').val()) + (+$('#il28extCost').val())
+                    + (+$('#il29extCost').val()) + (+$('#il30extCost').val()) + (+$('#il31extCost').val())
+                    + (+$('#il32extCost').val()) + (+$('#il33extCost').val()) + (+$('#il34extCost').val())
+                    + (+$('#il35extCost').val())
+
+                $('#il36extCost').val(result)
+            }
+
+
+            $('#il20extSell').change(function () { ProcessChangePriceMLExtSell(); })
+            $('#il21extSell').change(function () { ProcessChangePriceMLExtSell(); })
+            $('#il22extSell').change(function () { ProcessChangePriceMLExtSell(); })
+            $('#il23extSell').change(function () { ProcessChangePriceMLExtSell(); })
+            $('#il24extSell').change(function () { ProcessChangePriceMLExtSell(); })
+            $('#il25extSell').change(function () { ProcessChangePriceMLExtSell(); })
+            $('#il26extSell').change(function () { ProcessChangePriceMLExtSell(); })
+            $('#il27extSell').change(function () { ProcessChangePriceMLExtSell(); })
+            $('#il28extSell').change(function () { ProcessChangePriceMLExtSell(); })
+            $('#il29extSell').change(function () { ProcessChangePriceMLExtSell(); })
+            $('#il30extSell').change(function () { ProcessChangePriceMLExtSell(); })
+            $('#il31extSell').change(function () { ProcessChangePriceMLExtSell(); })
+            $('#il32extSell').change(function () { ProcessChangePriceMLExtSell(); })
+            $('#il33extSell').change(function () { ProcessChangePriceMLExtSell(); })
+            $('#il34extSell').change(function () { ProcessChangePriceMLExtSell(); })
+            $('#il35extSell').change(function () { ProcessChangePriceMLExtSell(); })
+
+
+            function ProcessChangePriceMLExtSell() {
+                var result =
+                    +($('#il20extSell').val()) + (+$('#il21extSell').val()) + (+$('#il22extSell').val())
+                    + (+$('#il23extSell').val()) + (+$('#il24extSell').val()) + (+$('#il25extSell').val())
+                    + (+$('#il26extSell').val()) + (+$('#il27extSell').val()) + (+$('#il28extSell').val())
+                    + (+$('#il29extSell').val()) + (+$('#il30extSell').val()) + (+$('#il31extSell').val())
+                    + (+$('#il32extSell').val()) + (+$('#il33extSell').val()) + (+$('#il34extSell').val())
+                    + (+$('#il35extSell').val())
+
+                $('#il36extSell').val(result)
+            }
+
+
+            $('#il1qty').change(function () { ProcessChangeQtySum(); })
+            $('#il2qty').change(function () { ProcessChangeQtySum(); })
+            $('#il3qty').change(function () { ProcessChangeQtySum(); })
+            $('#il4qty').change(function () { ProcessChangeQtySum(); })
+            $('#il5qty').change(function () { ProcessChangeQtySum(); })
+            $('#il6qty').change(function () { ProcessChangeQtySum(); })
+            $('#il7qty').change(function () { ProcessChangeQtySum(); })
+            $('#il8qty').change(function () { ProcessChangeQtySum(); })
+            $('#il9qty').change(function () { ProcessChangeQtySum(); })
+            $('#il10qty').change(function () { ProcessChangeQtySum(); })
+
+            function ProcessChangeQtySum() {
+                var result = (+($('#il1qty').val()) + (+$('#il2qty').val()))
+                + (+($('#il3qty').val()) + (+$('#il4qty').val()))
+                + (+($('#il5qty').val()) + (+$('#il6qty').val()))
+                + (+($('#il7qty').val()) + (+$('#il8qty').val()))
+                + (+($('#il9qty').val()) + (+$('#il10qty').val()))
+
+                $('#il11qty').val(result);
+            }
+
+            $('#il1unitSell').change(function () { ProcessChangeSumUnitSell(); })
+            $('#il2unitSell').change(function () { ProcessChangeSumUnitSell(); })
+            $('#il3unitSell').change(function () { ProcessChangeSumUnitSell(); })
+            $('#il4unitSell').change(function () { ProcessChangeSumUnitSell(); })
+            $('#il5unitSell').change(function () { ProcessChangeSumUnitSell(); })
+            $('#il6unitSell').change(function () { ProcessChangeSumUnitSell(); })
+            $('#il7unitSell').change(function () { ProcessChangeSumUnitSell(); })
+            $('#il8unitSell').change(function () { ProcessChangeSumUnitSell(); })
+            $('#il9unitSell').change(function () { ProcessChangeSumUnitSell(); })
+            $('#il10unitSell').change(function () { ProcessChangeSumUnitSell(); })
+
+
+            function ProcessChangeSumUnitSell() {
+                var result =
+                    +($('#il1unitSell').val()) + (+$('#il2unitSell').val()) + (+$('#il3unitSell').val())
+                    + (+$('#il4unitSell').val()) + (+$('#il5unitSell').val()) + (+$('#il6unitSell').val())
+                    + (+$('#il7unitSell').val()) + (+$('#il8unitSell').val()) + (+$('#il9unitSell').val())
+                    + (+$('#il10unitSell').val())
+
+                $('#il11unitSell').val(result)
+            }
+
+            $('#il1extSell').change(function () { ProcessChangeSumExtSell(); })
+            $('#il2extSell').change(function () { ProcessChangeSumExtSell(); })
+            $('#il3extSell').change(function () { ProcessChangeSumExtSell(); })
+            $('#il4extSell').change(function () { ProcessChangeSumExtSell(); })
+            $('#il5extSell').change(function () { ProcessChangeSumExtSell(); })
+            $('#il6extSell').change(function () { ProcessChangeSumExtSell(); })
+            $('#il7extSell').change(function () { ProcessChangeSumExtSell(); })
+            $('#il8extSell').change(function () { ProcessChangeSumExtSell(); })
+            $('#il9extSell').change(function () { ProcessChangeSumExtSell(); })
+            $('#il10extSell').change(function () { ProcessChangeSumExtSell(); })
+
+
+        function ProcessChangeSumExtSell() {
+                var result =
+                    +($('#il1extSell').val()) + (+$('#il2extSell').val()) + (+$('#il3extSell').val())
+                    + (+$('#il4extSell').val()) + (+$('#il5extSell').val()) + (+$('#il6extSell').val())
+                    + (+$('#il7extSell').val()) + (+$('#il8extSell').val()) + (+$('#il9extSell').val())
+                    + (+$('#il10extSell').val())
+
+                $('#il11extSell').val(result)
+            }
+         
+          
+        });
+
+        function openModal(lngID) {
+            jQuery.noConflict();
+            $('#myModal').modal('show');
+
+            $.ajax({
+                    type: "Get",
+                    url: '@Url.Action("GetOrderReceiptDetails", "Admin")',
+                    data: { maincontent: lngID },
+                    dataType: "json",
+                    success: function (data) {
+                        $("#myModal .modal-body").html(data);
+                    },
+                    error: function (e) {
+
+                        console.log(e);
+
+                    }
+                });
+        }
+
+        function openInvoiceModal(lngID, statustype) {
+            jQuery.noConflict();
+            $('#myInvoiceModal').modal('show');
+
+            $.ajax({
+                type: "Get",
+                url: '@Url.Action("LoadForCreateInvoiceAPI", "Admin")',
+                data: { OrderId: lngID, StatusType: statustype },
+                dataType: "json",
+                success: function (data) {
+                    if (parseInt(data.ilInvoiceID) == 0)
+                        $('#ModalSaveInvoice').html("Save");
+                    else if (parseInt(data.ilInvoiceID) > 0)
+                        $('#ModalSaveInvoice').html("Update");
+
+                    $('#DTClientOrderNo').html(data.dtClientOrderNo);
+                    $('#DTClientChargeTo').html(data.dtClientChargeTo);
+                    $('#DTClientJobName').html(data.dtClientJobName);
+                    $('#DTVendorInvoiceNo').html(data.dtVendorInvoiceNo);
+                    $('#DTVendorInvoiceDate').html(data.dtVendorInvoiceDate);
+                    $('#comment').val(data.comment);
+
+                    $('#ilInvoiceID').val(data.ilInvoiceID);
+                    $('#ilOrderID').val(data.ilOrderID);
+                    $('#il1linetype').val(data.il1linetype);
+                    $('#il1display').val(data.il1display);
+                    $('#il1name').text(data.il1name);
+                    $('#il1size').text(data.il1size);
+                    $('#il1qty').val(data.il1qty);
+                    $('#il1UOM').text(data.il1UOM);
+                    $('#il1unitCost').val(data.il1unitCost);
+                    $('#il1extCost').val(data.il1extCost);
+                    $('#il1unitSell').val(data.il1unitSell);
+                    $('#il1extSell').val(data.il1extSell);
+                    $('#il1minExtSell').val(data.il1minExtSell);
+
+                    $('#il2linetype').val(data.il2linetype);
+                    $('#il2display').val(data.il2display);
+                    $('#il2name').text(data.il2name);
+                    $('#il2size').text(data.il2size);
+                    $('#il2qty').val(data.il2qty);
+                    $('#il2UOM').text(data.il2UOM);
+                    $('#il2unitCost').val(data.il2unitCost);
+                    $('#il2extCost').val(data.il2extCost);
+                    $('#il2unitSell').val(data.il2unitSell);
+                    $('#il2extSell').val(data.il2extSell);
+                    $('#il2minExtSell').val(data.il2minExtSell);
+
+                    $('#il3linetype').val(data.il3linetype);
+                    $('#il3display').val(data.il3display);
+                    $('#il3name').text(data.il3name);
+                    $('#il3size').text(data.il3size);
+                    $('#il3qty').val(data.il3qty);
+                    $('#il3UOM').text(data.il3UOM);
+                    $('#il3unitCost').val(data.il3unitCost);
+                    $('#il3extCost').val(data.il3extCost);
+                    $('#il3unitSell').val(data.il3unitSell);
+                    $('#il3extSell').val(data.il3extSell);
+                    $('#il3minExtSell').val(data.il3minExtSell);
+
+                    $('#il4linetype').val(data.il4linetype);
+                    $('#il4display').val(data.il4display);
+                    $('#il4name').text(data.il4name);
+                    $('#il4size').text(data.il4size);
+                    $('#il4qty').val(data.il4qty);
+                    $('#il4UOM').text(data.il4UOM);
+                    $('#il4unitCost').val(data.il4unitCost);
+                    $('#il4extCost').val(data.il4extCost);
+                    $('#il4unitSell').val(data.il4unitSell);
+                    $('#il4extSell').val(data.il4extSell);
+                    $('#il4minExtSell').val(data.il4minExtSell);
+
+                    $('#il5linetype').val(data.il5linetype);
+                    $('#il5display').val(data.il5display);
+                    $('#il5name').text(data.il5name);
+                    $('#il5size').text(data.il5size);
+                    $('#il5qty').val(data.il5qty);
+                    $('#il5UOM').text(data.il5UOM);
+                    $('#il5unitCost').val(data.il5unitCost);
+                    $('#il5extCost').val(data.il5extCost);
+                    $('#il5unitSell').val(data.il5unitSell);
+                    $('#il5extSell').val(data.il5extSell);
+                    $('#il5minExtSell').val(data.il5minExtSell);
+
+                    $('#il6linetype').val(data.il6linetype);
+                    $('#il6display').val(data.il6display);
+                    $('#il6name').html(data.il6name);
+                    $('#il6size').text(data.il6size);
+                    $('#il6qty').val(data.il6qty);
+                    $('#il6UOM').text(data.il6UOM);
+                    $('#il6unitCost').val(data.il6unitCost);
+                    $('#il6extCost').val(data.il6extCost);
+                    $('#il6unitSell').val(data.il6unitSell);
+                    $('#il6extSell').val(data.il6extSell);
+                    $('#il6minExtSell').val(data.il6minExtSell);
+
+                    $('#il7linetype').val(data.il7linetype);
+                    $('#il7display').val(data.il7display);
+                    $('#il7name').text(data.il7name);
+                    $('#il7size').text(data.il7size);
+                    $('#il7qty').val(data.il7qty);
+                    $('#il7UOM').text(data.il7UOM);
+                    $('#il7unitCost').val(data.il7unitCost);
+                    $('#il7extCost').val(data.il7extCost);
+                    $('#il7unitSell').val(data.il7unitSell);
+                    $('#il7extSell').val(data.il7extSell);
+                    $('#il7minExtSell').val(data.il7minExtSell);
+
+                    $('#il8linetype').val(data.il8linetype);
+                    $('#il8display').val(data.il8display);
+                    $('#il8name').text(data.il8name);
+                    $('#il8size').text(data.il8size);
+                    $('#il8qty').val(data.il8qty);
+                    $('#il8UOM').text(data.il8UOM);
+                    $('#il8unitCost').val(data.il8unitCost);
+                    $('#il8extCost').val(data.il8extCost);
+                    $('#il8unitSell').val(data.il8unitSell);
+                    $('#il8extSell').val(data.il8extSell);
+                    $('#il8minExtSell').val(data.il8minExtSell);
+
+                    $('#il9linetype').val(data.il9linetype);
+                    $('#il9display').val(data.il9display);
+                    $('#il9name').text(data.il9name);
+                    $('#il9size').text(data.il9size);
+                    $('#il9qty').val(data.il9qty);
+                    $('#il9UOM').text(data.il9UOM);
+                    $('#il9unitCost').val(data.il9unitCost);
+                    $('#il9extCost').val(data.il9extCost);
+                    $('#il9unitSell').val(data.il9unitSell);
+                    $('#il9extSell').val(data.il9extSell);
+                    $('#il9minExtSell').val(data.il9minExtSell);
+
+                    $('#il10linetype').val(data.il10linetype);
+                    $('#il10display').val(data.il10display);
+                    $('#il10name').text(data.il10name);
+                    $('#il10size').text(data.il10size);
+                    $('#il10qty').val(data.il10qty);
+                    $('#il10UOM').text(data.il10UOM);
+                    $('#il10unitCost').val(data.il10unitCost);
+                    $('#il10extCost').val(data.il10extCost);
+                    $('#il10unitSell').val(data.il10unitSell);
+                    $('#il10extSell').val(data.il10extSell);
+                    $('#il10minExtSell').val(data.il10minExtSell);
+
+                    $('#il11linetype').val(data.il11linetype);
+                    $('#il11display').val(data.il11display);
+                    $('#il11name').text(data.il11name);
+                    $('#il11size').text(data.il11size);
+                    $('#il11qty').val(data.il11qty);
+                    $('#il11UOM').text(data.il11UOM);
+                    $('#il11unitCost').val(data.il11unitCost);
+                    $('#il11extCost').val(data.il11extCost);
+                    $('#il11unitSell').val(data.il11unitSell);
+                    $('#il11extSell').val(data.il11extSell);
+                    $('#il11minExtSell').val(data.il11minExtSell);
+
+                    $('#il20linetype').val(data.il20linetype);
+                    $('#il20display').val(data.il20display);
+                    $('#il20name').text(data.il20name);
+                    $('#il20qty').val(data.il20qty);
+                    $('#il20UOM').text(data.il20UOM);
+                    $('#il20unitCost').val(data.il20unitCost);
+                    $('#il20extCost').val(data.il20extCost);
+                    $('#il20unitSell').val(data.il20unitSell);
+                    $('#il20extSell').val(data.il20extSell);
+                    $('#il20minExtSell').val(data.il20minExtSell);
+
+                    $('#il21linetype').val(data.il21linetype);
+                    $('#il21display').val(data.il21display);
+                    $('#il21name').text(data.il21name);
+                    $('#il21qty').val(data.il21qty);
+                    $('#il21UOM').text(data.il21UOM);
+                    $('#il21unitCost').val(data.il21unitCost);
+                    $('#il21extCost').val(data.il21extCost);
+                    $('#il21unitSell').val(data.il21unitSell);
+                    $('#il21extSell').val(data.il21extSell);
+                    $('#il21minExtSell').val(data.il21minExtSell);
+
+                    $('#il22linetype').val(data.il22linetype);
+                    $('#il22display').val(data.il22display);
+                    $('#il22name').text(data.il22name);
+                    $('#il22qty').val(data.il22qty);
+                    $('#il22UOM').text(data.il22UOM);
+                    $('#il22unitCost').val(data.il22unitCost);
+                    $('#il22extCost').val(data.il22extCost);
+                    $('#il22unitSell').val(data.il22unitSell);
+                    $('#il22extSell').val(data.il22extSell);
+                    $('#il22minExtSell').val(data.il22minExtSell);
+
+                    $('#il23linetype').val(data.il23linetype);
+                    $('#il23display').val(data.il23display);
+                    $('#il23name').html(data.il23name);
+                    $('#il23qty').val(data.il23qty);
+                    $('#il23UOM').text(data.il23UOM);
+                    $('#il23unitCost').val(data.il23unitCost);
+                    $('#il23extCost').val(data.il23extCost);
+                    $('#il23unitSell').val(data.il23unitSell);
+                    $('#il23extSell').val(data.il23extSell);
+                    $('#il23minExtSell').val(data.il23minExtSell);
+
+                    $('#il24linetype').val(data.il24linetype);
+                    $('#il24display').val(data.il24display);
+                    $('#il24name').text(data.il24name);
+                    $('#il24qty').val(data.il24qty);
+                    $('#il24UOM').text(data.il24UOM);
+                    $('#il24unitCost').val(data.il24unitCost);
+                    $('#il24extCost').val(data.il24extCost);
+                    $('#il24unitSell').val(data.il24unitSell);
+                    $('#il24extSell').val(data.il24extSell);
+                    $('#il24minExtSell').val(data.il24minExtSell);
+
+                    $('#il25linetype').val(data.il25linetype);
+                    $('#il25display').val(data.il25display);
+                    $('#il25name').html(data.il25name);
+                    $('#il25qty').val(data.il25qty);
+                    $('#il25UOM').text(data.il25UOM);
+                    $('#il25unitCost').val(data.il25unitCost);
+                    $('#il25extCost').val(data.il25extCost);
+                    $('#il25unitSell').val(data.il25unitSell);
+                    $('#il25extSell').val(data.il25extSell);
+                    $('#il25minExtSell').val(data.il25minExtSell);
+
+                    $('#il26linetype').val(data.il26linetype);
+                    $('#il26display').val(data.il26display);
+                    $('#il26name').html(data.il26name);
+                    $('#il26qty').val(data.il26qty);
+                    $('#il26UOM').text(data.il26UOM);
+                    $('#il26unitCost').val(data.il26unitCost);
+                    $('#il26extCost').val(data.il26extCost);
+                    $('#il26unitSell').val(data.il26unitSell);
+                    $('#il26extSell').val(data.il26extSell);
+                    $('#il26minExtSell').val(data.il26minExtSell);
+
+                    $('#il27linetype').val(data.il27linetype);
+                    $('#il27display').val(data.il27display);
+                    $('#il27name').html(data.il27name);
+                    $('#il27qty').val(data.il27qty);
+                    $('#il27UOM').text(data.il27UOM);
+                    $('#il27unitCost').val(data.il27unitCost);
+                    $('#il27extCost').val(data.il27extCost);
+                    $('#il27unitSell').val(data.il27unitSell);
+                    $('#il27extSell').val(data.il27extSell);
+                    $('#il27minExtSell').val(data.il27minExtSell);
+
+                    $('#il28linetype').val(data.il28linetype);
+                    $('#il28display').val(data.il28display);
+                    $('#il28name').text(data.il28name);
+                    $('#il28qty').val(data.il28qty);
+                    $('#il28UOM').text(data.il28UOM);
+                    $('#il28unitCost').val(data.il28unitCost);
+                    $('#il28extCost').val(data.il28extCost);
+                    $('#il28unitSell').val(data.il28unitSell);
+                    $('#il28extSell').val(data.il28extSell);
+                    $('#il28minExtSell').val(data.il28minExtSell);
+
+                    $('#il29linetype').val(data.il29linetype);
+                    $('#il29display').val(data.il29display);
+                    $('#il29name').html(data.il29name);
+                    $('#il29qty').val(data.il29qty);
+                    $('#il29UOM').text(data.il29UOM);
+                    $('#il29unitCost').val(data.il29unitCost);
+                    $('#il29extCost').val(data.il29extCost);
+                    $('#il29unitSell').val(data.il29unitSell);
+                    $('#il29extSell').val(data.il29extSell);
+                    $('#il29minExtSell').val(data.il29minExtSell);
+
+                    $('#il30linetype').val(data.il30linetype);
+                    $('#il30display').val(data.il30display);
+                    $('#il30name').html(data.il30name);
+                    $('#il30qty').val(data.il30qty);
+                    $('#il30UOM').text(data.il30UOM);
+                    $('#il30unitCost').val(data.il30unitCost);
+                    $('#il30extCost').val(data.il30extCost);
+                    $('#il30unitSell').val(data.il30unitSell);
+                    $('#il30extSell').val(data.il30extSell);
+                    $('#il30minExtSell').val(data.il30minExtSell);
+
+                    $('#il31linetype').val(data.il31linetype);
+                    $('#il31display').val(data.il31display);
+                    $('#il31name').html(data.il31name);
+                    $('#il31qty').val(data.il31qty);
+                    $('#il31UOM').text(data.il31UOM);
+                    $('#il31unitCost').val(data.il31unitCost);
+                    $('#il31extCost').val(data.il31extCost);
+                    $('#il31unitSell').val(data.il31unitSell);
+                    $('#il31extSell').val(data.il31extSell);
+                    $('#il31minExtSell').val(data.il31minExtSell);
+
+                    $('#il32linetype').val(data.il32linetype);
+                    $('#il32display').val(data.il32display);
+                    $('#il32name').text(data.il32name);
+                    $('#il32qty').val(data.il32qty);
+                    $('#il32UOM').text(data.il32UOM);
+                    $('#il32unitCost').val(data.il32unitCost);
+                    $('#il32extCost').val(data.il32extCost);
+                    $('#il32unitSell').val(data.il32unitSell);
+                    $('#il32extSell').val(data.il32extSell);
+                    $('#il32minExtSell').val(data.il32minExtSell);
+
+                    $('#il33linetype').val(data.il33linetype);
+                    $('#il33display').val(data.il33display);
+                    $('#il33name').text(data.il33name);
+                    $('#il33qty').val(data.il33qty);
+                    $('#il33UOM').text(data.il33UOM);
+                    $('#il33unitCost').val(data.il33unitCost);
+                    $('#il33extCost').val(data.il33extCost);
+                    $('#il33unitSell').val(data.il33unitSell);
+                    $('#il33extSell').val(data.il33extSell);
+                    $('#il33minExtSell').val(data.il33minExtSell);
+
+                    $('#il34linetype').val(data.il34linetype);
+                    $('#il34display').val(data.il34display);
+                    $('#il34name').text(data.il34name);
+                    $('#il34qty').val(data.il34qty);
+                    $('#il34UOM').text(data.il34UOM);
+                    $('#il34unitCost').val(data.il34unitCost);
+                    $('#il34extCost').val(data.il34extCost);
+                    $('#il34unitSell').val(data.il34unitSell);
+                    $('#il34extSell').val(data.il34extSell);
+                    $('#il34minExtSell').val(data.il34minExtSell);
+
+                    $('#il35linetype').val(data.il35linetype);
+                    $('#il35display').val(data.il35display);
+                    $('#il35name').text(data.il35name);
+                    $('#il35qty').val(data.il35qty);
+                    $('#il35UOM').text(data.il35UOM);
+                    $('#il35unitCost').val(data.il35unitCost);
+                    $('#il35extCost').val(data.il35extCost);
+                    $('#il35unitSell').val(data.il35unitSell);
+                    $('#il35extSell').val(data.il35extSell);
+                    $('#il35minExtSell').val(data.il35minExtSell);
+
+                    $('#il36linetype').val(data.il36linetype);
+                    $('#il36display').val(data.il36display);
+                    $('#il36name').text(data.il36name);
+                    $('#il36qty').val(data.il36qty);
+                    $('#il36UOM').text(data.il36UOM);
+                    $('#il36unitCost').val(data.il36unitCost);
+                    $('#il36extCost').val(data.il36extCost);
+                    $('#il36unitSell').val(data.il36unitSell);
+                    $('#il36extSell').val(data.il36extSell);
+                    $('#il36minExtSell').val(data.il36minExtSell);
+
+                    $('#il40linetype').val(data.il40linetype);
+                    $('#il40display').val(data.il40display);
+                    $('#il40name').text(data.il40name);
+                    $('#il40qty').val(data.il40qty);
+                    $('#il40UOM').text(data.il40UOM);
+                    $('#il40unitCost').val(data.il40unitCost);
+                    $('#il40extCost').val(data.il40extCost);
+                    $('#il40unitSell').val(data.il40unitSell);
+                    $('#il40extSell').val(data.il40extSell);
+                    $('#il40minExtSell').val(data.il40minExtSell);
+
+                    },
+                error: function (e) {
+                    alert('inside error');
+                        console.log(e);
+                    }
+                });
+        }
+
+        function submitInvoice() {
+             model = {
+
+                 ilStatusType: $('#ilStatusType').val(),
+                 orderID: $('#lngID').val(),
+                 vendorInvoiceNo: '',
+                 comment: $('#comment').val(),
+                 ilOrderID: $('#ilOrderID').val(),
+                 ilInvoiceID: $('#ilInvoiceID').val(),
+                 il1linetype: $('#il1linetype').val(),
+                 il1display: $('#il1display').val(),
+                 il1name: $('#il1name').html(),
+                 il1size: $('#il1size').html(),
+                 il1qty: $('#il1qty').val(),
+                 il1UOM: $('#il1UOM').html(),
+                 il1unitCost: $('#il1unitCost').val(),
+                 il1extCost: $('#il1extCost').val(),
+                 il1unitSell: $('#il1unitSell').val(),
+                 il1extSell: $('#il1extSell').val(),
+                 il1minExtSell: $('#il1minExtSell').html(),
+
+                 il2linetype: $('#il2linetype').val(),
+                 il2display: $('#il2display').val(),
+                 il2name: $('#il2name').html(),
+                 il2size: $('#il2size').html(),
+                 il2qty: $('#il2qty').val(),
+                 il2UOM: $('#il2UOM').html(),
+                 il2unitCost: $('#il2unitCost').val(),
+                 il2extCost: $('#il2extCost').val(),
+                 il2unitSell: $('#il2unitSell').val(),
+                 il2extSell: $('#il2extSell').val(),
+                 il2minExtSell: $('#il2minExtSell').html(),
+
+                 il3linetype: $('#il3linetype').val(),
+                 il3display: $('#il3display').val(),
+                 il3name: $('#il3name').html(),
+                 il3size: $('#il3size').html(),
+                 il3qty: $('#il3qty').val(),
+                 il3UOM: $('#il3UOM').html(),
+                 il3unitCost: $('#il3unitCost').val(),
+                 il3extCost: $('#il3extCost').val(),
+                 il3unitSell: $('#il3unitSell').val(),
+                 il3extSell: $('#il3extSell').val(),
+                 il3minExtSell: $('#il3minExtSell').html(),
+
+                 il4linetype: $('#il4linetype').val(),
+                 il4display: $('#il4display').val(),
+                 il4name: $('#il4name').html(),
+                 il4size: $('#il4size').html(),
+                 il4qty: $('#il4qty').val(),
+                 il4UOM: $('#il4UOM').html(),
+                 il4unitCost: $('#il4unitCost').val(),
+                 il4extCost: $('#il4extCost').val(),
+                 il4unitSell: $('#il4unitSell').val(),
+                 il4extSell: $('#il4extSell').val(),
+                 il4minExtSell: $('#il4minExtSell').html(),
+
+                 il5linetype: $('#il5linetype').val(),
+                 il5display: $('#il5display').val(),
+                 il5name: $('#il5name').html(),
+                 il5size: $('#il5size').html(),
+                 il5qty: $('#il5qty').val(),
+                 il5UOM: $('#il5UOM').html(),
+                 il5unitCost: $('#il5unitCost').val(),
+                 il5extCost: $('#il5extCost').val(),
+                 il5unitSell: $('#il5unitSell').val(),
+                 il5extSell: $('#il5extSell').val(),
+                 il5minExtSell: $('#il5minExtSell').html(),
+
+                 il6linetype: $('#il6linetype').val(),
+                 il6display: $('#il6display').val(),
+                 il6name: $('#il6name').html(),
+                 il6size: $('#il6size').html(),
+                 il6qty: $('#il6qty').val(),
+                 il6UOM: $('#il6UOM').html(),
+                 il6unitCost: $('#il6unitCost').val(),
+                 il6extCost: $('#il6extCost').val(),
+                 il6unitSell: $('#il6unitSell').val(),
+                 il6extSell: $('#il6extSell').val(),
+                 il6minExtSell: $('#il6minExtSell').html(),
+
+                 il7linetype: $('#il7linetype').val(),
+                 il7display: $('#il7display').val(),
+                 il7name: $('#il7name').html(),
+                 il7size: $('#il7size').html(),
+                 il7qty: $('#il7qty').val(),
+                 il7UOM: $('#il7UOM').html(),
+                 il7unitCost: $('#il7unitCost').val(),
+                 il7extCost: $('#il7extCost').val(),
+                 il7unitSell: $('#il7unitSell').val(),
+                 il7extSell: $('#il7extSell').val(),
+                 il7minExtSell: $('#il7minExtSell').html(),
+
+                 il8linetype: $('#il8linetype').val(),
+                 il8display: $('#il8display').val(),
+                 il8name: $('#il8name').html(),
+                 il8size: $('#il8size').html(),
+                 il8qty: $('#il8qty').val(),
+                 il8UOM: $('#il8UOM').html(),
+                 il8unitCost: $('#il8unitCost').val(),
+                 il8extCost: $('#il8extCost').val(),
+                 il8unitSell: $('#il8unitSell').val(),
+                 il8extSell: $('#il8extSell').val(),
+                 il8minExtSell: $('#il8minExtSell').html(),
+
+                 il9linetype: $('#il9linetype').val(),
+                 il9display: $('#il9display').val(),
+                 il9name: $('#il9name').html(),
+                 il9size: $('#il9size').html(),
+                 il9qty: $('#il9qty').val(),
+                 il9UOM: $('#il9UOM').html(),
+                 il9unitCost: $('#il9unitCost').val(),
+                 il9extCost: $('#il9extCost').val(),
+                 il9unitSell: $('#il9unitSell').val(),
+                 il9extSell: $('#il9extSell').val(),
+                 il9minExtSell: $('#il9minExtSell').html(),
+
+                 il10linetype: $('#il10linetype').val(),
+                 il10display: $('#il10display').val(),
+                 il10name: $('#il10name').html(),
+                 il10size: $('#il10size').html(),
+                 il10qty: $('#il10qty').val(),
+                 il10UOM: $('#il10UOM').html(),
+                 il10unitCost: $('#il10unitCost').val(),
+                 il10extCost: $('#il10extCost').val(),
+                 il10unitSell: $('#il10unitSell').val(),
+                 il10extSell: $('#il10extSell').val(),
+                 il10minExtSell: $('#il10minExtSell').html(),
+
+                 il11linetype: $('#il11linetype').val(),
+                 il11display: $('#il11display').val(),
+                 il11name: $('#il11name').html(),
+                 il11size: $('#il11size').html(),
+                 il11qty: $('#il11qty').val(),
+                 il11UOM: $('#il11UOM').html(),
+                 il11unitCost: $('#il11unitCost').val(),
+                 il11extCost: $('#il11extCost').val(),
+                 il11unitSell: $('#il11unitSell').val(),
+                 il11extSell: $('#il11extSell').val(),
+                 il11minExtSell: $('#il11minExtSell').html(),
+
+                 il20linetype: $('#il20linetype').val(),
+                 il20display: $('#il20display').val(),
+                 il20name: $('#il20name').html(),
+                 il20size: $('#il20size').html(),
+                 il20qty: $('#il20qty').val(),
+                 il20UOM: $('#il20UOM').html(),
+                 il20unitCost: $('#il20unitCost').val(),
+                 il20extCost: $('#il20extCost').val(),
+                 il20unitSell: $('#il20unitSell').val(),
+                 il20extSell: $('#il20extSell').val(),
+                 il20minExtSell: $('#il20minExtSell').html(),
+
+                 il21linetype: $('#il21linetype').val(),
+                 il21display: $('#il21display').val(),
+                 il21name: $('#il21name').html(),
+                 il21size: $('#il21size').html(),
+                 il21qty: $('#il21qty').val(),
+                 il21UOM: $('#il21UOM').html(),
+                 il21unitCost: $('#il21unitCost').val(),
+                 il21extCost: $('#il21extCost').val(),
+                 il21unitSell: $('#il21unitSell').val(),
+                 il21extSell: $('#il21extSell').val(),
+                 il21minExtSell: $('#il21minExtSell').html(),
+
+                 il22linetype: $('#il22linetype').val(),
+                 il22display: $('#il22display').val(),
+                 il22name: $('#il22name').html(),
+                 il22size: $('#il22size').html(),
+                 il22qty: $('#il22qty').val(),
+                 il22UOM: $('#il22UOM').html(),
+                 il22unitCost: $('#il22unitCost').val(),
+                 il22extCost: $('#il22extCost').val(),
+                 il22unitSell: $('#il22unitSell').val(),
+                 il22extSell: $('#il22extSell').val(),
+                 il22minExtSell: $('#il22minExtSell').html(),
+
+                 il23linetype: $('#il23linetype').val(),
+                 il23display: $('#il23display').val(),
+                 il23name: $('#il23name').html(),
+                 il23size: $('#il23size').html(),
+                 il23qty: $('#il23qty').val(),
+                 il23UOM: $('#il23UOM').html(),
+                 il23unitCost: $('#il23unitCost').val(),
+                 il23extCost: $('#il23extCost').val(),
+                 il23unitSell: $('#il23unitSell').val(),
+                 il23extSell: $('#il23extSell').val(),
+                 il23minExtSell: $('#il23minExtSell').html(),
+
+                 il24linetype: $('#il24linetype').val(),
+                 il24display: $('#il24display').val(),
+                 il24name: $('#il24name').html(),
+                 il24size: $('#il24size').html(),
+                 il24qty: $('#il24qty').val(),
+                 il24UOM: $('#il24UOM').html(),
+                 il24unitCost: $('#il24unitCost').val(),
+                 il24extCost: $('#il24extCost').val(),
+                 il24unitSell: $('#il24unitSell').val(),
+                 il24extSell: $('#il24extSell').val(),
+                 il24minExtSell: $('#il24minExtSell').html(),
+
+                 il25linetype: $('#il25linetype').val(),
+                 il25display: $('#il25display').val(),
+                 il25name: $('#il25name').html(),
+                 il25size: $('#il25size').html(),
+                 il25qty: $('#il25qty').val(),
+                 il25UOM: $('#il25UOM').html(),
+                 il25unitCost: $('#il25unitCost').val(),
+                 il25extCost: $('#il25extCost').val(),
+                 il25unitSell: $('#il25unitSell').val(),
+                 il25extSell: $('#il25extSell').val(),
+                 il25minExtSell: $('#il25minExtSell').html(),
+
+                 il26linetype: $('#il26linetype').val(),
+                 il26display: $('#il26display').val(),
+                 il26name: $('#il26name').html(),
+                 il26size: $('#il26size').html(),
+                 il26qty: $('#il26qty').val(),
+                 il26UOM: $('#il26UOM').html(),
+                 il26unitCost: $('#il26unitCost').val(),
+                 il26extCost: $('#il26extCost').val(),
+                 il26unitSell: $('#il26unitSell').val(),
+                 il26extSell: $('#il26extSell').val(),
+                 il26minExtSell: $('#il26minExtSell').html(),
+
+                 il27linetype: $('#il27linetype').val(),
+                 il27display: $('#il27display').val(),
+                 il27name: $('#il27name').html(),
+                 il27size: $('#il27size').html(),
+                 il27qty: $('#il27qty').val(),
+                 il27UOM: $('#il27UOM').html(),
+                 il27unitCost: $('#il27unitCost').val(),
+                 il27extCost: $('#il27extCost').val(),
+                 il27unitSell: $('#il27unitSell').val(),
+                 il27extSell: $('#il27extSell').val(),
+                 il27minExtSell: $('#il27minExtSell').html(),
+
+                 il28linetype: $('#il28linetype').val(),
+                 il28display: $('#il28display').val(),
+                 il28name: $('#il28name').html(),
+                 il28size: $('#il28size').html(),
+                 il28qty: $('#il28qty').val(),
+                 il28UOM: $('#il28UOM').html(),
+                 il28unitCost: $('#il28unitCost').val(),
+                 il28extCost: $('#il28extCost').val(),
+                 il28unitSell: $('#il28unitSell').val(),
+                 il28extSell: $('#il28extSell').val(),
+                 il28minExtSell: $('#il28minExtSell').html(),
+
+                 il29linetype: $('#il29linetype').val(),
+                 il29display: $('#il29display').val(),
+                 il29name: $('#il29name').html(),
+                 il29size: $('#il29size').html(),
+                 il29qty: $('#il29qty').val(),
+                 il29UOM: $('#il29UOM').html(),
+                 il29unitCost: $('#il29unitCost').val(),
+                 il29extCost: $('#il29extCost').val(),
+                 il29unitSell: $('#il29unitSell').val(),
+                 il29extSell: $('#il29extSell').val(),
+                 il29minExtSell: $('#il29minExtSell').html(),
+
+                 il30linetype: $('#il30linetype').val(),
+                 il30display: $('#il30display').val(),
+                 il30name: $('#il30name').html(),
+                 il30size: $('#il30size').html(),
+                 il30qty: $('#il30qty').val(),
+                 il30UOM: $('#il30UOM').html(),
+                 il30unitCost: $('#il30unitCost').val(),
+                 il30extCost: $('#il30extCost').val(),
+                 il30unitSell: $('#il30unitSell').val(),
+                 il30extSell: $('#il30extSell').val(),
+                 il30minExtSell: $('#il30minExtSell').html(),
+
+                 il31linetype: $('#il31linetype').val(),
+                 il31display: $('#il31display').val(),
+                 il31name: $('#il31name').html(),
+                 il31size: $('#il31size').html(),
+                 il31qty: $('#il31qty').val(),
+                 il31UOM: $('#il31UOM').html(),
+                 il31unitCost: $('#il31unitCost').val(),
+                 il31extCost: $('#il31extCost').val(),
+                 il31unitSell: $('#il31unitSell').val(),
+                 il31extSell: $('#il31extSell').val(),
+                 il31minExtSell: $('#il31minExtSell').html(),
+
+                 il32linetype: $('#il32linetype').val(),
+                 il32display: $('#il32display').val(),
+                 il32name: $('#il32name').html(),
+                 il32size: $('#il32size').html(),
+                 il32qty: $('#il32qty').val(),
+                 il32UOM: $('#il32UOM').html(),
+                 il32unitCost: $('#il32unitCost').val(),
+                 il32extCost: $('#il32extCost').val(),
+                 il32unitSell: $('#il32unitSell').val(),
+                 il32extSell: $('#il32extSell').val(),
+                 il32minExtSell: $('#il32minExtSell').html(),
+
+                 il33linetype: $('#il33linetype').val(),
+                 il33display: $('#il33display').val(),
+                 il33name: $('#il33name').html(),
+                 il33size: $('#il33size').html(),
+                 il33qty: $('#il33qty').val(),
+                 il33UOM: $('#il33UOM').html(),
+                 il33unitCost: $('#il33unitCost').val(),
+                 il33extCost: $('#il33extCost').val(),
+                 il33unitSell: $('#il33unitSell').val(),
+                 il33extSell: $('#il33extSell').val(),
+                 il33minExtSell: $('#il33minExtSell').html(),
+
+                 il34linetype: $('#il34linetype').val(),
+                 il34display: $('#il34display').val(),
+                 il34name: $('#il34name').html(),
+                 il34size: $('#il34size').html(),
+                 il34qty: $('#il34qty').val(),
+                 il34UOM: $('#il34UOM').html(),
+                 il34unitCost: $('#il34unitCost').val(),
+                 il34extCost: $('#il34extCost').val(),
+                 il34unitSell: $('#il34unitSell').val(),
+                 il34extSell: $('#il34extSell').val(),
+                 il34minExtSell: $('#il34minExtSell').html(),
+
+                 il35linetype: $('#il35linetype').val(),
+                 il35display: $('#il35display').val(),
+                 il35name: $('#il35name').html(),
+                 il35size: $('#il35size').html(),
+                 il35qty: $('#il35qty').val(),
+                 il35UOM: $('#il35UOM').html(),
+                 il35unitCost: $('#il35unitCost').val(),
+                 il35extCost: $('#il35extCost').val(),
+                 il35unitSell: $('#il35unitSell').val(),
+                 il35extSell: $('#il35extSell').val(),
+                 il35minExtSell: $('#il35minExtSell').html(),
+
+                 il36linetype: $('#il36linetype').val(),
+                 il36display: $('#il36display').val(),
+                 il36name: $('#il36name').html(),
+                 il36size: $('#il36size').html(),
+                 il36qty: $('#il36qty').val(),
+                 il36UOM: $('#il36UOM').html(),
+                 il36unitCost: $('#il36unitCost').val(),
+                 il36extCost: $('#il36extCost').val(),
+                 il36unitSell: $('#il36unitSell').val(),
+                 il36extSell: $('#il36extSell').val(),
+                 il36minExtSell: $('#il36minExtSell').html(),
+
+                 il40linetype: $('#il40linetype').val(),
+                 il40display: $('#il40display').val(),
+                 il40name: $('#il40name').html(),
+                 il40size: $('#il40size').html(),
+                 il40qty: $('#il40qty').val(),
+                 il40UOM: $('#il40UOM').html(),
+                 il40unitCost: $('#il40unitCost').val(),
+                 il40extCost: $('#il40extCost').val(),
+                 il40unitSell: $('#il40unitSell').val(),
+                 il40extSell: $('#il40extSell').val(),
+                 il40minExtSell: $('#il40minExtSell').html()
+
+             };
+
+             if ($('#ModalSaveInvoice').html() == 'Save') {
+                 $.post('@Url.Action("SubmitForCreateInvoice", "Admin")', { model }, function (data) { alert(data); window.location.reload();});
+             }
+             else if ($('#ModalSaveInvoice').html() == 'Update'){
+                $.post('@Url.Action("SubmitForUpdateInvoice", "Admin")', { model }, function (data) { alert(data);});
+             }
+        }
+
+        function submitFinalInvoice() {
+             model = {
+
+                 ilStatusType: $('#ilStatusType').val(),
+                 orderID: $('#lngID').val(),
+                 vendorInvoiceNo: '',
+                 comment: $('#comment').val(),
+                 ilOrderID: $('#ilOrderID').val(),
+                 ilInvoiceID: $('#ilInvoiceID').val(),
+                 il1linetype: $('#il1linetype').val(),
+                 il1display: $('#il1display').val(),
+                 il1name: $('#il1name').html(),
+                 il1size: $('#il1size').html(),
+                 il1qty: $('#il1qty').val(),
+                 il1UOM: $('#il1UOM').html(),
+                 il1unitCost: $('#il1unitCost').val(),
+                 il1extCost: $('#il1extCost').val(),
+                 il1unitSell: $('#il1unitSell').val(),
+                 il1extSell: $('#il1extSell').val(),
+                 il1minExtSell: $('#il1minExtSell').html(),
+
+                 il2linetype: $('#il2linetype').val(),
+                 il2display: $('#il2display').val(),
+                 il2name: $('#il2name').html(),
+                 il2size: $('#il2size').html(),
+                 il2qty: $('#il2qty').val(),
+                 il2UOM: $('#il2UOM').html(),
+                 il2unitCost: $('#il2unitCost').val(),
+                 il2extCost: $('#il2extCost').val(),
+                 il2unitSell: $('#il2unitSell').val(),
+                 il2extSell: $('#il2extSell').val(),
+                 il2minExtSell: $('#il2minExtSell').html(),
+
+                 il3linetype: $('#il3linetype').val(),
+                 il3display: $('#il3display').val(),
+                 il3name: $('#il3name').html(),
+                 il3size: $('#il3size').html(),
+                 il3qty: $('#il3qty').val(),
+                 il3UOM: $('#il3UOM').html(),
+                 il3unitCost: $('#il3unitCost').val(),
+                 il3extCost: $('#il3extCost').val(),
+                 il3unitSell: $('#il3unitSell').val(),
+                 il3extSell: $('#il3extSell').val(),
+                 il3minExtSell: $('#il3minExtSell').html(),
+
+                 il4linetype: $('#il4linetype').val(),
+                 il4display: $('#il4display').val(),
+                 il4name: $('#il4name').html(),
+                 il4size: $('#il4size').html(),
+                 il4qty: $('#il4qty').val(),
+                 il4UOM: $('#il4UOM').html(),
+                 il4unitCost: $('#il4unitCost').val(),
+                 il4extCost: $('#il4extCost').val(),
+                 il4unitSell: $('#il4unitSell').val(),
+                 il4extSell: $('#il4extSell').val(),
+                 il4minExtSell: $('#il4minExtSell').html(),
+
+                 il5linetype: $('#il5linetype').val(),
+                 il5display: $('#il5display').val(),
+                 il5name: $('#il5name').html(),
+                 il5size: $('#il5size').html(),
+                 il5qty: $('#il5qty').val(),
+                 il5UOM: $('#il5UOM').html(),
+                 il5unitCost: $('#il5unitCost').val(),
+                 il5extCost: $('#il5extCost').val(),
+                 il5unitSell: $('#il5unitSell').val(),
+                 il5extSell: $('#il5extSell').val(),
+                 il5minExtSell: $('#il5minExtSell').html(),
+
+                 il6linetype: $('#il6linetype').val(),
+                 il6display: $('#il6display').val(),
+                 il6name: $('#il6name').html(),
+                 il6size: $('#il6size').html(),
+                 il6qty: $('#il6qty').val(),
+                 il6UOM: $('#il6UOM').html(),
+                 il6unitCost: $('#il6unitCost').val(),
+                 il6extCost: $('#il6extCost').val(),
+                 il6unitSell: $('#il6unitSell').val(),
+                 il6extSell: $('#il6extSell').val(),
+                 il6minExtSell: $('#il6minExtSell').html(),
+
+                 il7linetype: $('#il7linetype').val(),
+                 il7display: $('#il7display').val(),
+                 il7name: $('#il7name').html(),
+                 il7size: $('#il7size').html(),
+                 il7qty: $('#il7qty').val(),
+                 il7UOM: $('#il7UOM').html(),
+                 il7unitCost: $('#il7unitCost').val(),
+                 il7extCost: $('#il7extCost').val(),
+                 il7unitSell: $('#il7unitSell').val(),
+                 il7extSell: $('#il7extSell').val(),
+                 il7minExtSell: $('#il7minExtSell').html(),
+
+                 il8linetype: $('#il8linetype').val(),
+                 il8display: $('#il8display').val(),
+                 il8name: $('#il8name').html(),
+                 il8size: $('#il8size').html(),
+                 il8qty: $('#il8qty').val(),
+                 il8UOM: $('#il8UOM').html(),
+                 il8unitCost: $('#il8unitCost').val(),
+                 il8extCost: $('#il8extCost').val(),
+                 il8unitSell: $('#il8unitSell').val(),
+                 il8extSell: $('#il8extSell').val(),
+                 il8minExtSell: $('#il8minExtSell').html(),
+
+                 il9linetype: $('#il9linetype').val(),
+                 il9display: $('#il9display').val(),
+                 il9name: $('#il9name').html(),
+                 il9size: $('#il9size').html(),
+                 il9qty: $('#il9qty').val(),
+                 il9UOM: $('#il9UOM').html(),
+                 il9unitCost: $('#il9unitCost').val(),
+                 il9extCost: $('#il9extCost').val(),
+                 il9unitSell: $('#il9unitSell').val(),
+                 il9extSell: $('#il9extSell').val(),
+                 il9minExtSell: $('#il9minExtSell').html(),
+
+                 il10linetype: $('#il10linetype').val(),
+                 il10display: $('#il10display').val(),
+                 il10name: $('#il10name').html(),
+                 il10size: $('#il10size').html(),
+                 il10qty: $('#il10qty').val(),
+                 il10UOM: $('#il10UOM').html(),
+                 il10unitCost: $('#il10unitCost').val(),
+                 il10extCost: $('#il10extCost').val(),
+                 il10unitSell: $('#il10unitSell').val(),
+                 il10extSell: $('#il10extSell').val(),
+                 il10minExtSell: $('#il10minExtSell').html(),
+
+                 il11linetype: $('#il11linetype').val(),
+                 il11display: $('#il11display').val(),
+                 il11name: $('#il11name').html(),
+                 il11size: $('#il11size').html(),
+                 il11qty: $('#il11qty').val(),
+                 il11UOM: $('#il11UOM').html(),
+                 il11unitCost: $('#il11unitCost').val(),
+                 il11extCost: $('#il11extCost').val(),
+                 il11unitSell: $('#il11unitSell').val(),
+                 il11extSell: $('#il11extSell').val(),
+                 il11minExtSell: $('#il11minExtSell').html(),
+
+                 il20linetype: $('#il20linetype').val(),
+                 il20display: $('#il20display').val(),
+                 il20name: $('#il20name').html(),
+                 il20size: $('#il20size').html(),
+                 il20qty: $('#il20qty').val(),
+                 il20UOM: $('#il20UOM').html(),
+                 il20unitCost: $('#il20unitCost').val(),
+                 il20extCost: $('#il20extCost').val(),
+                 il20unitSell: $('#il20unitSell').val(),
+                 il20extSell: $('#il20extSell').val(),
+                 il20minExtSell: $('#il20minExtSell').html(),
+
+                 il21linetype: $('#il21linetype').val(),
+                 il21display: $('#il21display').val(),
+                 il21name: $('#il21name').html(),
+                 il21size: $('#il21size').html(),
+                 il21qty: $('#il21qty').val(),
+                 il21UOM: $('#il21UOM').html(),
+                 il21unitCost: $('#il21unitCost').val(),
+                 il21extCost: $('#il21extCost').val(),
+                 il21unitSell: $('#il21unitSell').val(),
+                 il21extSell: $('#il21extSell').val(),
+                 il21minExtSell: $('#il21minExtSell').html(),
+
+                 il22linetype: $('#il22linetype').val(),
+                 il22display: $('#il22display').val(),
+                 il22name: $('#il22name').html(),
+                 il22size: $('#il22size').html(),
+                 il22qty: $('#il22qty').val(),
+                 il22UOM: $('#il22UOM').html(),
+                 il22unitCost: $('#il22unitCost').val(),
+                 il22extCost: $('#il22extCost').val(),
+                 il22unitSell: $('#il22unitSell').val(),
+                 il22extSell: $('#il22extSell').val(),
+                 il22minExtSell: $('#il22minExtSell').html(),
+
+                 il23linetype: $('#il23linetype').val(),
+                 il23display: $('#il23display').val(),
+                 il23name: $('#il23name').html(),
+                 il23size: $('#il23size').html(),
+                 il23qty: $('#il23qty').val(),
+                 il23UOM: $('#il23UOM').html(),
+                 il23unitCost: $('#il23unitCost').val(),
+                 il23extCost: $('#il23extCost').val(),
+                 il23unitSell: $('#il23unitSell').val(),
+                 il23extSell: $('#il23extSell').val(),
+                 il23minExtSell: $('#il23minExtSell').html(),
+
+                 il24linetype: $('#il24linetype').val(),
+                 il24display: $('#il24display').val(),
+                 il24name: $('#il24name').html(),
+                 il24size: $('#il24size').html(),
+                 il24qty: $('#il24qty').val(),
+                 il24UOM: $('#il24UOM').html(),
+                 il24unitCost: $('#il24unitCost').val(),
+                 il24extCost: $('#il24extCost').val(),
+                 il24unitSell: $('#il24unitSell').val(),
+                 il24extSell: $('#il24extSell').val(),
+                 il24minExtSell: $('#il24minExtSell').html(),
+
+                 il25linetype: $('#il25linetype').val(),
+                 il25display: $('#il25display').val(),
+                 il25name: $('#il25name').html(),
+                 il25size: $('#il25size').html(),
+                 il25qty: $('#il25qty').val(),
+                 il25UOM: $('#il25UOM').html(),
+                 il25unitCost: $('#il25unitCost').val(),
+                 il25extCost: $('#il25extCost').val(),
+                 il25unitSell: $('#il25unitSell').val(),
+                 il25extSell: $('#il25extSell').val(),
+                 il25minExtSell: $('#il25minExtSell').html(),
+
+                 il26linetype: $('#il26linetype').val(),
+                 il26display: $('#il26display').val(),
+                 il26name: $('#il26name').html(),
+                 il26size: $('#il26size').html(),
+                 il26qty: $('#il26qty').val(),
+                 il26UOM: $('#il26UOM').html(),
+                 il26unitCost: $('#il26unitCost').val(),
+                 il26extCost: $('#il26extCost').val(),
+                 il26unitSell: $('#il26unitSell').val(),
+                 il26extSell: $('#il26extSell').val(),
+                 il26minExtSell: $('#il26minExtSell').html(),
+
+                 il27linetype: $('#il27linetype').val(),
+                 il27display: $('#il27display').val(),
+                 il27name: $('#il27name').html(),
+                 il27size: $('#il27size').html(),
+                 il27qty: $('#il27qty').val(),
+                 il27UOM: $('#il27UOM').html(),
+                 il27unitCost: $('#il27unitCost').val(),
+                 il27extCost: $('#il27extCost').val(),
+                 il27unitSell: $('#il27unitSell').val(),
+                 il27extSell: $('#il27extSell').val(),
+                 il27minExtSell: $('#il27minExtSell').html(),
+
+                 il28linetype: $('#il28linetype').val(),
+                 il28display: $('#il28display').val(),
+                 il28name: $('#il28name').html(),
+                 il28size: $('#il28size').html(),
+                 il28qty: $('#il28qty').val(),
+                 il28UOM: $('#il28UOM').html(),
+                 il28unitCost: $('#il28unitCost').val(),
+                 il28extCost: $('#il28extCost').val(),
+                 il28unitSell: $('#il28unitSell').val(),
+                 il28extSell: $('#il28extSell').val(),
+                 il28minExtSell: $('#il28minExtSell').html(),
+
+                 il29linetype: $('#il29linetype').val(),
+                 il29display: $('#il29display').val(),
+                 il29name: $('#il29name').html(),
+                 il29size: $('#il29size').html(),
+                 il29qty: $('#il29qty').val(),
+                 il29UOM: $('#il29UOM').html(),
+                 il29unitCost: $('#il29unitCost').val(),
+                 il29extCost: $('#il29extCost').val(),
+                 il29unitSell: $('#il29unitSell').val(),
+                 il29extSell: $('#il29extSell').val(),
+                 il29minExtSell: $('#il29minExtSell').html(),
+
+                 il30linetype: $('#il30linetype').val(),
+                 il30display: $('#il30display').val(),
+                 il30name: $('#il30name').html(),
+                 il30size: $('#il30size').html(),
+                 il30qty: $('#il30qty').val(),
+                 il30UOM: $('#il30UOM').html(),
+                 il30unitCost: $('#il30unitCost').val(),
+                 il30extCost: $('#il30extCost').val(),
+                 il30unitSell: $('#il30unitSell').val(),
+                 il30extSell: $('#il30extSell').val(),
+                 il30minExtSell: $('#il30minExtSell').html(),
+
+                 il31linetype: $('#il31linetype').val(),
+                 il31display: $('#il31display').val(),
+                 il31name: $('#il31name').html(),
+                 il31size: $('#il31size').html(),
+                 il31qty: $('#il31qty').val(),
+                 il31UOM: $('#il31UOM').html(),
+                 il31unitCost: $('#il31unitCost').val(),
+                 il31extCost: $('#il31extCost').val(),
+                 il31unitSell: $('#il31unitSell').val(),
+                 il31extSell: $('#il31extSell').val(),
+                 il31minExtSell: $('#il31minExtSell').html(),
+
+                 il32linetype: $('#il32linetype').val(),
+                 il32display: $('#il32display').val(),
+                 il32name: $('#il32name').html(),
+                 il32size: $('#il32size').html(),
+                 il32qty: $('#il32qty').val(),
+                 il32UOM: $('#il32UOM').html(),
+                 il32unitCost: $('#il32unitCost').val(),
+                 il32extCost: $('#il32extCost').val(),
+                 il32unitSell: $('#il32unitSell').val(),
+                 il32extSell: $('#il32extSell').val(),
+                 il32minExtSell: $('#il32minExtSell').html(),
+
+                 il33linetype: $('#il33linetype').val(),
+                 il33display: $('#il33display').val(),
+                 il33name: $('#il33name').html(),
+                 il33size: $('#il33size').html(),
+                 il33qty: $('#il33qty').val(),
+                 il33UOM: $('#il33UOM').html(),
+                 il33unitCost: $('#il33unitCost').val(),
+                 il33extCost: $('#il33extCost').val(),
+                 il33unitSell: $('#il33unitSell').val(),
+                 il33extSell: $('#il33extSell').val(),
+                 il33minExtSell: $('#il33minExtSell').html(),
+
+                 il34linetype: $('#il34linetype').val(),
+                 il34display: $('#il34display').val(),
+                 il34name: $('#il34name').html(),
+                 il34size: $('#il34size').html(),
+                 il34qty: $('#il34qty').val(),
+                 il34UOM: $('#il34UOM').html(),
+                 il34unitCost: $('#il34unitCost').val(),
+                 il34extCost: $('#il34extCost').val(),
+                 il34unitSell: $('#il34unitSell').val(),
+                 il34extSell: $('#il34extSell').val(),
+                 il34minExtSell: $('#il34minExtSell').html(),
+
+                 il35linetype: $('#il35linetype').val(),
+                 il35display: $('#il35display').val(),
+                 il35name: $('#il35name').html(),
+                 il35size: $('#il35size').html(),
+                 il35qty: $('#il35qty').val(),
+                 il35UOM: $('#il35UOM').html(),
+                 il35unitCost: $('#il35unitCost').val(),
+                 il35extCost: $('#il35extCost').val(),
+                 il35unitSell: $('#il35unitSell').val(),
+                 il35extSell: $('#il35extSell').val(),
+                 il35minExtSell: $('#il35minExtSell').html(),
+
+                 il36linetype: $('#il36linetype').val(),
+                 il36display: $('#il36display').val(),
+                 il36name: $('#il36name').html(),
+                 il36size: $('#il36size').html(),
+                 il36qty: $('#il36qty').val(),
+                 il36UOM: $('#il36UOM').html(),
+                 il36unitCost: $('#il36unitCost').val(),
+                 il36extCost: $('#il36extCost').val(),
+                 il36unitSell: $('#il36unitSell').val(),
+                 il36extSell: $('#il36extSell').val(),
+                 il36minExtSell: $('#il36minExtSell').html(),
+
+                 il40linetype: $('#il40linetype').val(),
+                 il40display: $('#il40display').val(),
+                 il40name: $('#il40name').html(),
+                 il40size: $('#il40size').html(),
+                 il40qty: $('#il40qty').val(),
+                 il40UOM: $('#il40UOM').html(),
+                 il40unitCost: $('#il40unitCost').val(),
+                 il40extCost: $('#il40extCost').val(),
+                 il40unitSell: $('#il40unitSell').val(),
+                 il40extSell: $('#il40extSell').val(),
+                 il40minExtSell: $('#il40minExtSell').html()
+
+             };
+
+                $.post('@Url.Action("FinalSubmitInvoice", "Admin")', { model }, function (data) { alert(data); window.location.reload();});
+        }
+
+
+    </script>
+}
+
